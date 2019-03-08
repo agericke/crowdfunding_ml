@@ -29,6 +29,7 @@ Useful links related to the project:
 * <https://www.kaggle.com/kemical/kickstarter-projects>
 * <https://www.researchgate.net/figure/Statistics-for-the-Kickstarter-dataset_tbl1_266204217>
 * <https://towardsdatascience.com/predicting-the-success-of-kickstarter-campaigns-3f4a976419b9>
+* <https://app.asana.com/0/1113401999185541/1113401999185557> 
 
 ## 3. TEAM MEMBERS<a id="id2"></a>
 
