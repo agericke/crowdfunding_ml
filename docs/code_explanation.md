@@ -60,37 +60,3 @@ The team is formed by the following members:
 ## 4. DELIVERABLES<a id="id3"></a>)
 
 
-## 2. LINKS<a id="id2"></a>
-
-A complete guideline on the requirements for the projects can be found in the following link:
-
-[Final Project Requirements](./CSP-MATH_571_Final_Project_Sp19.pdf)
-
-We will be uploading the documents to Drive. You can fiinf the link to the Drive Folder [here](https://drive.google.com/drive/u/1/folders/1Eycu2f__qeFFGDdiV8baRkvSapLz80zj).
-
-Useful links related to the project:
-
-* <https://www.quora.com/Where-can-I-get-raw-statistics-on-Kickstarter-projects>
-* <https://webrobots.io/kickstarter-datasets/>
-* <https://www.kaggle.com/kemical/kickstarter-projects>
-* <https://www.researchgate.net/figure/Statistics-for-the-Kickstarter-dataset_tbl1_266204217>
-* <https://towardsdatascience.com/predicting-the-success-of-kickstarter-campaigns-3f4a976419b9>
-
-## 3. TEAM MEMBERS<a id="id2"></a>
-
-The team is formed by the following members:
-
-* Cristina Blanco Garrido - A20431766
-    - <cblanco1@hawk.iit.edu>
-    - [Github](https://github.com/crisblancog)
-* Marta de Larrea Pombo - A20432672
-    - <mdelarreapombo@hawk.iit.edu>
-    - [Github](https://github.com/mlpombo)
-* Álvaro Gericke Parga - A20434027
-    - <alvgericke@gmail.com>
-    - [Github](https://github.com/agericke)
-* Tien Tran - A20414075
-    - <ttran27@hawk.iit.edu>
-    - [Github](https://github.com/crtien)
-
-## 4. DELIVERABLES<a id="id3"></a>
