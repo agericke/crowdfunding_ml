@@ -24,12 +24,18 @@ We will be uploading the documents to Drive. You can fiinf the link to the Drive
 
 Useful links related to the project:
 
-* <https://www.quora.com/Where-can-I-get-raw-statistics-on-Kickstarter-projects>
-* <https://webrobots.io/kickstarter-datasets/>
-* <https://www.kaggle.com/kemical/kickstarter-projects>
-* <https://www.researchgate.net/figure/Statistics-for-the-Kickstarter-dataset_tbl1_266204217>
-* <https://towardsdatascience.com/predicting-the-success-of-kickstarter-campaigns-3f4a976419b9>
-* <https://app.asana.com/0/1113401999185541/1113401999185557> 
+* Data links:
+	- <https://www.quora.com/Where-can-I-get-raw-statistics-on-Kickstarter-projects>
+	- <https://webrobots.io/kickstarter-datasets/>
+	- <https://www.kaggle.com/kemical/kickstarter-projects>
+
+* Research Links
+	- <https://www.researchgate.net/figure/Statistics-for-the-Kickstarter-dataset_tbl1_266204217>
+	- <https://towardsdatascience.com/predicting-the-success-of-kickstarter-campaigns-3f4a976419b9>
+
+* Tools links:
+	- <https://app.asana.com/0/1113401999185541/1113401999185557> 
+	- <https://drive.google.com/drive/u/1/folders/1Eycu2f__qeFFGDdiV8baRkvSapLz80zj>
 
 ## 3. TEAM MEMBERS<a id="id2"></a>
 
