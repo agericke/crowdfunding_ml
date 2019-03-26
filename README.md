@@ -5,6 +5,8 @@
 - [1. INTRODUCTION](#id1)
 - [2. LINKS](#id2)
 - [3. TEAM MEMBERS](#id3)
+- [4. DELIVERABLES](#id4)
+- [5. PROJECT STRUCTURE](#id5)
 
 ## 1. INTRODUCTION <a id="id1"></a>
 
@@ -37,7 +39,7 @@ Useful links related to the project:
 	- <https://app.asana.com/0/1113401999185541/1113401999185557> 
 	- <https://drive.google.com/drive/u/1/folders/1Eycu2f__qeFFGDdiV8baRkvSapLz80zj>
 
-## 3. TEAM MEMBERS<a id="id2"></a>
+## 3. TEAM MEMBERS<a id="id3"></a>
 
 The team is formed by the following members:
 
@@ -54,4 +56,14 @@ The team is formed by the following members:
     - <ttran27@hawk.iit.edu>
     - [Github](https://github.com/crtien)
 
-## 4. DELIVERABLES<a id="id3"></a>
+## 4. DELIVERABLES<a id="id4"></a>
+
+## 5. PROJECT STRUCTURE<a id="id5"></a>
+
+The project folders and code is structured in the following way:
+
+* `__data__`: This folder contains all the csv files order by year and months in folders. This folder will be local so in order to download all the data you should run the scrapping script.
+* `__deliverables__`: Contains all the different deliverables or the links to them that are required throughout the year.
+* `__docs__`: This folder contains papers regarding kickstarter studies as well as other documentation about the project.
+* `__src/__`: This folder contains all the source code for the project. Under this folder you will find subfolders with scripts and other code for a specific purpose.
+
