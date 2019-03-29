@@ -21,10 +21,14 @@ from bs4 import BeautifulSoup
 from io import BytesIO
 from zipfile import ZipFile
 
+sys.stdout.write("Python executing correctly \n")
+
 # Initial directories set up
-dirname = os.path.dirname(os.path.abspath('__file__'))
+dirname = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(os.path.abspath(os.path.join(os.path.join(dirname, os.pardir), os.pardir)), 'data/')
 
+sys.stdout.write("Directory name is %s \n" % dirname)
+sys.stdout.write("Datadir is %s \n" % datadir)
 # Data URL from webroots
 url = "https://webrobots.io/kickstarter-datasets"
 html = urlopen(url)

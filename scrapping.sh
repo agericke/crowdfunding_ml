@@ -7,7 +7,9 @@ NUMARG=$#
 
 if [ $NUMARG -gt "0" ]
 then
-	python ./src/scrapping/scrapping.py sys.argv[1]
+	echo "More than one argument"
+	echo $1
+	python ./src/scrapping/scrapping.py $1
 else 
 	python ./src/scrapping/scrapping.py
 fi

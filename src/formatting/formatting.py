@@ -14,8 +14,8 @@ import os, sys
 #%matplotlib inline
 
 # Initial directories set up
-dirname = os.path.dirname(os.path.abspath('__file__'))
-datadir = os.path.join(os.path.abspath(os.path.join(dirname, os.pardir)), 'data/')
+dirname = os.path.dirname(os.path.abspath(__file__))
+datadir = os.path.join(os.path.abspath(os.path.join(os.path.join(dirname, os.pardir), os.pardir)), 'data/')
 
 """
 Need to create a big dataframe. For each csv file we should add the data to the dataframe,
