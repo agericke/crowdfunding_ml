@@ -90,3 +90,12 @@ print(percentage_per_state)
 data2 = data[(data['state'] == 'failed') | (data['state'] == 'successful')]
 #We convert the variables 'successful' state to 1 and failed to 0, to have our logical target variable
 data2['state'] = (data2['state'] =='successful').astype(int)
+
+# Create new columns main_category and sub_category on the new Data Frame data2
+data2['main_category'] = data2['category'].apply(lambda x: x.split(":")[-1].strip("}").strip("\"").split("/")[0])
+data2['sub_category'] = data2['category'].apply(lambda x: x.split(":")[-1].strip("}").strip("\"").split("/")[1])
+
+# After using the category variables, we can drop that. For now I just leave the comment here just in case we still need this variables
+# data2.drop('category', inplace=True, axis=1)
+# Check if the data frame is in appropriate format:
+data2.head()
