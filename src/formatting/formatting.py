@@ -99,3 +99,15 @@ data2['sub_category'] = data2['category'].apply(lambda x: x.split(":")[-1].strip
 # data2.drop('category', inplace=True, axis=1)
 # Check if the data frame is in appropriate format:
 data2.head()
+
+# Plot some bar plots to visualize categorical variables
+def bar_plot(df, col):
+    h = df[col].value_counts()
+    x = pd.DataFrame(df[col].value_counts()).transpose()
+    plt.bar(list(x),h)
+
+bar_plot(data2, 'country')
+bar_plot(data2, 'year_launched')
+bar_plot(data2, 'month_launched')
+bar_plot(data2, 'main_category')
+bar_plot(data2, 'sub_category')
