@@ -33,8 +33,13 @@ to_drop = ['friends','is_starred','is_backing','permissions']
 data.drop(to_drop, inplace=True, axis=1)
 #Now we will drop the columns/variables that we have determine have no value to our study
 to_drop2 = ['photo','currency','blurb','currency_symbol','currency_trailing_code','state_changed_at',
-            'slug','created_at','disable_communication','creator','location','spotlight','profile','urls','source_url']
+            'slug','created_at','disable_communication','creator','spotlight','profile','urls','source_url']
 data.drop(to_drop2, inplace=True, axis=1)
+
+# Drop missing rows
+data = data.dropna()
+data['city'] = data['location'].apply(lambda x: x.split(":")[-8].strip("\"").split("\"")[0])
+data['country_state'] = data['location'].apply(lambda x: x.split(":")[-7].strip("\"").split(",")[1].strip(" ").strip("\""))
 
 #Extract the categories: main_category and the category
 #category=data['category']
@@ -113,16 +118,16 @@ data2.drop("id", inplace=True, axis=1)
 
 
 # Plot some bar plots to visualize categorical variables
-def bar_plot(df, col):
-    h = df[col].value_counts()
-    x = pd.DataFrame(df[col].value_counts()).transpose()
-    plt.bar(list(x),h)
+# def bar_plot(df, col):
+#     h = df[col].value_counts()
+#     x = pd.DataFrame(df[col].value_counts()).transpose()
+#     plt.bar(list(x),h)
 
-bar_plot(data2, 'country')
-bar_plot(data2, 'year_launched')
-bar_plot(data2, 'month_launched')
-bar_plot(data2, 'main_category')
-bar_plot(data2, 'sub_category')
+# bar_plot(data2, 'country')
+# bar_plot(data2, 'year_launched')
+# bar_plot(data2, 'month_launched')
+# bar_plot(data2, 'main_category')
+# bar_plot(data2, 'sub_category')
 
 
 #Calculating the distribution of projects across the main categories
