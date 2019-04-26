@@ -38,8 +38,9 @@ data.drop(to_drop2, inplace=True, axis=1)
 
 # Drop missing rows
 data = data.dropna()
-data['city'] = data['location'].apply(lambda x: x.split(":")[-8].strip("\"").split("\"")[0])
-data['country_state'] = data['location'].apply(lambda x: x.split(":")[-7].strip("\"").split(",")[1].strip(" ").strip("\""))
+data['city'] = data['location'].apply(lambda x: x.split(",")[5].split(":")[1].strip("\""))
+data['country_state'] = data['location'].apply(lambda x: x.split(",")[-4].split(":")[1].strip("\""))
+data['type'] = data['location'].apply(lambda x: x.split(",")[-3].split(":")[1].strip("\""))
 
 #Extract the categories: main_category and the category
 #category=data['category']
