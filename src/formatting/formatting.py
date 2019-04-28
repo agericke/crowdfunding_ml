@@ -33,16 +33,20 @@ and the season of the year.
 data = pd.read_csv(os.path.join(datadir, "2016-05-15T020446/Kickstarter001.csv"))
 
 #First lets drop the columns that have no values
-to_drop = ['friends','is_starred','is_backing','permissions']
-data.drop(to_drop, inplace=True, axis=1)
+#to_drop = ['friends','is_starred','is_backing','permissions']
+#data.drop(to_drop, inplace=True, axis=1)
 #Now we will drop the columns/variables that we have determine have no value to our study
-to_drop2 = ['photo','staff_pick','currency_symbol','currency_trailing_code','state_changed_at',
-            'slug','disable_communication','creator','spotlight','profile','urls','source_url']
-data.drop(to_drop2, inplace=True, axis=1)
-  
+#to_drop2 = ['photo','staff_pick','currency_symbol','currency_trailing_code','state_changed_at',
+#            'slug','disable_communication','creator','spotlight','profile','urls','source_url']
+#data.drop(to_drop2, inplace=True, axis=1)
+#Here is were you upload the merged data  
+#data=df_total
+
+#data.set_index('id',inplace=True)
+
 #Look for missing values
 print(data.isna().sum()) 
-#The amount of missing values is low, only 5 out 4000, so we can drop them.
+#The amount of missing values is low, really low percentage, so we can drop them.
 data = data.dropna()
 
 #Create usd_goal, where we convert the goal into usd
@@ -71,14 +75,13 @@ data['weekday_launched'] = data.apply(lambda row: time.strftime('%a', time.local
 data['launched_at'] = data.apply(lambda row: datetime.datetime.fromtimestamp(row.launched_at), axis=1)
 data['deadline'] = data.apply(lambda row: datetime.datetime.fromtimestamp(row.deadline), axis=1)
 
-
 #Find out the length of the name, the amount of words used
 data['name_length'] = data['name'].str.split().str.len()
 #We get the length of the blurb variable too. It is the description   
 data['description_length'] = data['blurb'].str.split().str.len() 
 
 #Drop variables that we dont need anymore. Because they have been used to engineer new ones.
-to_drop3 = ['blurb','pledged','deadline','launched_at','created_at','static_usd_rate']
+to_drop3 = ['blurb','state_changed_at','pledged','deadline','launched_at','created_at','static_usd_rate']
 data.drop(to_drop3, inplace=True, axis=1)
 
 #Lets look at the data. Printing summary of the kickstarter data not discarded
@@ -94,17 +97,17 @@ print(data.describe())
 summary=data.describe()
 
 # Create new columns main_category and sub_category on the new Data Frame data2
-data['main_category'] = data['category'].apply(lambda x: x.split(":")[-1].strip("}").strip("\"").split("/")[0])
-data['sub_category'] = data['category'].apply(lambda x: x.split(":")[-1].strip("}").strip("\"").split("/")[1])
+data['main_category'] = data['category'].apply(lambda x: x.split("slug",1)[-1].split("\"")[2].split("/")[0])
+#data['sub_category'] = data['category'].apply(lambda x: x.split("slug",1)[-1].split("\"")[2].split("/")[-1])
 # We drop the category variable since we don't need it anymore.
 data.drop("category", inplace=True, axis=1)
 
 #We extract the city, state and country from the location dictionary.
-data['country2'] = data['location'].apply(lambda x: x.split(",")[0].split(":")[1].strip("\""))
-data['city'] = data['location'].apply(lambda x: x.split(",")[5].split(":")[1].strip("\""))
-data['country_state'] = data['location'].apply(lambda x: x.split(",")[-4].split(":")[1].strip("\""))
-data['type'] = data['location'].apply(lambda x: x.split(",")[-3].split(":")[1].strip("\""))
+data['country2'] = data['location'].apply(lambda x: x.split("country",1)[-1].split("\"")[2])
+data['region_state'] = data['location'].apply(lambda x: x.split("state",1)[-1].split("\"")[2])
+data['type'] = data['location'].apply(lambda x: x.split("type",1)[-1].split("\"")[2])
 
+data.loc[data['country2'] == 'short_name', 'country2'] = 'US'
 # We drop the location variable since we don't need it anymore.
 data.drop("location", inplace=True, axis=1)
 
@@ -135,9 +138,26 @@ data.loc[data['usd_goal'] >= 10000,'goal_range'] = 'I'
 
 #Calculate the number of competitors in the same category, with the same goal range and in a time perios
 #same year and month
-competitors=data.groupby(['sub_category','year_launched','month_launched','goal_range']).count()
+competitors=data.groupby(['main_category','year_launched','month_launched','goal_range']).count()
 competitors=competitors[['name']]
 competitors.reset_index(inplace=True)
+
+#renaming columns of the derived table
+colmuns_month=['main_category', 'year_launched', 'month_launched', 'goal_range', 'competitors']
+competitors.columns=colmuns_month
+
+#merging the particpants column into the base table
+data = pd.merge(data, competitors, on = ['main_category', 'year_launched', 'month_launched','goal_range'], how = 'left')
+
+#We create a variable to evaluate the proportion of succesful projects depending
+#on the competitors range
+data.loc[data['competitors'] < 10,'comp_range'] = 'A'
+data.loc[(data['competitors'] >= 10)&(data['competitors'] < 30),'comp_range'] = 'B'
+data.loc[(data['competitors'] >= 30)&(data['competitors'] < 60),'comp_range'] = 'C'
+data.loc[(data['competitors'] >= 60)&(data['competitors'] < 100),'comp_range'] = 'D'
+data.loc[(data['competitors'] >= 100)&(data['competitors'] < 150),'comp_range'] = 'E'
+data.loc[(data['competitors'] >= 150)&(data['competitors'] < 200),'comp_range'] = 'F'
+data.loc[data['competitors'] >= 200,'comp_range'] = 'G'
 
 #We find out the distribution of data across state. 
 percentage_per_state = round(data["state"].value_counts() / len(data["state"]) * 100,2)
@@ -147,13 +167,14 @@ print(percentage_per_state)
 #We only keep those projects that have values either successful or failed
 data2 = data[(data['state'] == 'failed') | (data['state'] == 'successful')]
 
-#Count the number of projects from each country and change the country of those that have less 10,
+#Count the number of projects from each country and change the country of those that have less than 16,
 #since it is a low amount to predict correctly, to OTHER
 countryCount=data2.groupby('country2').country2.count()
 countryCount=countryCount.sort_values()
-countries=countryCount[countryCount < 10]
+countries=countryCount[countryCount < 31]
 countries=list(countries.index.values)
 data2.loc[data2['country2'].isin(countries),'country2'] = 'OTHER'
+
 
 #data2 = data2[~data2['country2'].isin(countries)]
 countryCount2=data2.groupby('country2').country2.count()
@@ -163,35 +184,30 @@ countryCount2=countryCount2.sort_values()
 data2.head()
 
 #Finally, we drop the id variable. We dont need it for the models
-data2.drop("id", inplace=True, axis=1)
+#data2.drop("id", inplace=True, axis=1)
 
 #Lets get a dataframe only with the projects in the US
 dataUS=data2[data['country2'] == 'US']
 #Percentage of projects that are from the US
 USprojectPer=len(dataUS.index)/len(data2.index)*100
 
-# Plot some bar plots to visualize categorical variables
-def bar_plot(df, col):
-    h = df[col].value_counts()
-    x = pd.DataFrame(df[col].value_counts()).transpose()
-    plt.bar(list(x),h)
-
-bar_plot(data2, 'country')
-bar_plot(data2, 'year_launched')
-bar_plot(data2, 'month_launched')
-bar_plot(data2, 'main_category')
-bar_plot(data2, 'sub_category')
+#State analysis. There is a small percentage with a wrong classification. Classify as OTHER
+stateCount=dataUS.groupby('region_state').region_state.count()
+dataUS.loc[dataUS['region_state']=='Canton of Basel-Country','region_state'] = 'OTHER'
+dataUS.loc[dataUS['region_state']=='location','region_state'] = 'OTHER'
+dataUS.loc[dataUS['region_state']=='short_name','region_state'] = 'OTHER'
+dataUS.loc[dataUS['region_state']=='slug','region_state'] = 'OTHER'
 
 
 #Calculating the distribution of projects across the main categories
 stateDistCat = pd.get_dummies(data2.set_index('main_category').state).groupby('main_category').sum()
 stateDistCat.columns = ['failed', 'successful']
 #Finding the correlation of continuous variables with the dependent variable
-corr=data2[['backers_count','usd_pledged','usd_goal','duration','name_length','state','pledge_per_backer']].corr()
+corr=data2[['backers_count','usd_pledged','usd_goal','duration','name_length','days_until_launched','pledge_per_backer','state']].corr()
 
 # Plotting
 
-fig, ((ax1, ax2, ax3), (ax4, ax5, ax6), (ax7, ax8, ax9)) = plt.subplots(3, 3, figsize=(12,12))
+fig, ((ax1, ax2, ax3), (ax4, ax5, ax6), (ax7, ax8, ax9)) = plt.subplots(3, 3, figsize=(15,15))
 
 data2.groupby('state').state.count().plot(kind='bar', ax=ax1)
 ax1.set_title('Number of Projects per State')
@@ -223,6 +239,10 @@ ax6.set_xlabel('')
 #ax7.set_title('Proportion that are staff picks')
 #ax7.set_xlabel('')
 
+data2.groupby('state').competitors.mean().plot(kind='bar', ax=ax7)
+ax7.set_title('Median number of competitors')
+ax7.set_xlabel('')
+
 data2.groupby('state').description_length.mean().plot(kind='bar', ax=ax8)
 ax8.set_title('Mean description length of project')
 ax8.set_xlabel('')
@@ -235,7 +255,7 @@ fig.subplots_adjust(hspace=0.6)
 plt.show()
 
 
-fig, ((ax1, ax2), (ax3, ax4), (ax5, ax6)) = plt.subplots(3, 2, figsize=(12,12))
+fig, ((ax1, ax2), (ax3, ax4), (ax5, ax6), (ax7,ax8)) = plt.subplots(4, 2, figsize=(20,20))
 
 data2.groupby('main_category').main_category.count().plot(kind='bar', ax=ax1)
 ax1.set_title('Number of projects')
@@ -261,10 +281,21 @@ data2.groupby('main_category').pledge_per_backer.median().plot(kind='bar', ax=ax
 ax6.set_title('Median pledged per backer ($)')
 ax6.set_xlabel('')
 
+data2.groupby('main_category').competitors.median().plot(kind='bar', ax=ax7)
+ax7.set_title('Median number of competitors')
+ax7.set_xlabel('')
+
+stateDistComp = pd.get_dummies(data2.set_index('comp_range').state).groupby('comp_range').sum()
+stateDistComp.columns = ['failed', 'successful']
+
+stateDistComp.div(stateDistComp.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax8)
+ax8.set_title('Proportion of successful projects')
+ax8.set_xlabel('Competitors Range')
+
 fig.subplots_adjust(hspace=0.6)
 plt.show()
 
-fig, ((ax1, ax2), (ax3, ax4), (ax5, ax6), (ax7, ax8), (ax9, ax10)) = plt.subplots(5, 2, figsize=(20,30))
+fig, ((ax1, ax2), (ax3, ax4), (ax5, ax6), (ax7, ax8), (ax9, ax10)) = plt.subplots(5, 2, figsize=(30,40))
 
 stateDistCountry = pd.get_dummies(data2.set_index('country').state).groupby('country').sum()
 stateDistCountry.columns = ['failed', 'successful']
@@ -309,7 +340,7 @@ stateDistWeekday.div(stateDistWeekday.sum(axis=1), axis=0).successful.plot(kind=
 ax6.set_title('Proportion of successful projects')
 ax6.set_xlabel('Weekday')
 
-stateDistUS = pd.get_dummies(dataUS.set_index('country_state').state).groupby('country_state').sum()
+stateDistUS = pd.get_dummies(dataUS.set_index('region_state').state).groupby('region_state').sum()
 stateDistUS.columns = ['failed', 'successful']
 
 stateDistUS.div(stateDistUS.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax7)
@@ -342,13 +373,10 @@ plt.show()
 
 #We convert the variables 'successful' state to 1 and failed to 0, to have our logical target variable
 data2['state'] = (data2['state'] =='successful').astype(int)
-#We convert the variables 'True' state to 1 and 'False' to 0, to have a logical variable staff_pick
-#data2['staff_pick'] = (data2['staff_pick']).astype(int)
 
-#Since there are too many sub_categories we will drop this column and work with the main_category
-data2.drop("sub_category", inplace=True, axis=1)
-#Same with the cities
-data2.drop("city", inplace=True, axis=1)
+#Drop variables that we dont need anymore. Because they have been used to engineer new ones.
+to_drop4 = ['name','country','region_state']
+data2.drop(to_drop4, inplace=True, axis=1)
 
 
 #Preparing the data for Machine Learning
@@ -365,3 +393,4 @@ X = pd.DataFrame(scale.fit_transform(X1), columns=list(X1.columns))
 
 #Finally, the data is separated into training and testing set
 X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.25, random_state=22333)
+
