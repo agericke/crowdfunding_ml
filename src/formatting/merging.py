@@ -220,7 +220,7 @@ def store_dataframe(dataframe, filename):
     Returns:
         Nothing.
     """
-    pickle.dump(open(filename), 'wb')
+    pickle.dump(dataframe, open(filename, 'wb'))
     
 
 def read_from_disk(filename):
