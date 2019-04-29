@@ -6,8 +6,6 @@
 
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 import os, sys
 import time
 import pickle
@@ -26,7 +24,7 @@ def initial_setup():
     """    
     # Initial directories set up
     dirname = os.path.dirname(os.path.abspath('__file__'))
-    datadir =  os.path.join(os.path.abspath(os.path.join(os.path.join(dirname, os.pardir), os.pardir)), 'data/')
+    datadir =  os.path.join(os.path.abspath(os.path.join(os.path.join(dirname, os.pardir), os.pardir)), 'data')
     colnames = sorted(['backers_count', 'blurb', 'category', 'country', 'created_at', 'state_changed_at', 'currency', 'deadline', 'goal', 'id', 'launched_at', 'location', 'name', 'pledged', 'state', 'static_usd_rate', 'usd_pledged'])
     return dirname, datadir, colnames
 
@@ -220,7 +218,7 @@ def store_dataframe(dataframe, filename):
     Returns:
         Nothing.
     """
-    pickle.dump(open(filename), 'wb')
+    pickle.dump(dataframe, open(filename, 'wb'))
     
 
 def read_from_disk(filename):
@@ -250,24 +248,25 @@ def main():
     # 2 - Obtain all files paths within directories.
     all_files = obtain_all_files(data_dirs)
     
-    # 3 - Check that all files have the required columns for our project.
-    results_col_checks = check_all_files(all_files, colnames)
-    # Print summary of results.
-    bad_files = 0
-    good_files = 0
-    for result in results_col_checks:
-        if result[0] == False:
-            bad_files += 1
-        if result[0] == True:
-            good_files += 1
-    print("We have %d bad files" % bad_files)
-    print("We have %d good files" % good_files)
+    # # 3 - Check that all files have the required columns for our project.
+    # results_col_checks = check_all_files(all_files, colnames)
+    # # Print summary of results.
+    # bad_files = 0
+    # good_files = 0
+    # for result in results_col_checks:
+    #     if result[0] == False:
+    #         bad_files += 1
+    #     if result[0] == True:
+    #         good_files += 1
+    # print("We have %d bad files" % bad_files)
+    # print("We have %d good files" % good_files)
             
     # 4 - Create full dataframe from all files, removing duplicates
     df_total = create_full_dataframe(all_files, colnames)
     
     # 5 - Store dataframe in disk
     filename = os.path.join(datadir, 'dataframe_total.pkl')
+    print("Dataframe total is going to be saved to %s" % filename)
     store_dataframe(df_total, filename)
 
 
