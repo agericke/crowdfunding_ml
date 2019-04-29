@@ -35,7 +35,7 @@ data = pd.read_csv(os.path.join(datadir, "2016-05-15T020446/Kickstarter001.csv")
 #First lets drop the columns that have no values
 #to_drop = ['friends','is_starred','is_backing','permissions']
 #data.drop(to_drop, inplace=True, axis=1)
-#Now we will drop the columns/variables that we have determine have no value to our study
+#Now we will drop the columns/variables that we have determine have no value to our studyxº
 #to_drop2 = ['photo','staff_pick','currency_symbol','currency_trailing_code','state_changed_at',
 #            'slug','disable_communication','creator','spotlight','profile','urls','source_url']
 #data.drop(to_drop2, inplace=True, axis=1)
