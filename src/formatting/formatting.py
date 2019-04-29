@@ -21,7 +21,7 @@ from sklearn.model_selection import train_test_split
 
 # Initial directories set up
 dirname = os.path.dirname(os.path.abspath('__file__'))
-datadir = os.path.join(os.path.abspath(os.path.join(os.path.join(dirname, os.pardir), os.pardir)), 'data/')
+datadir = os.path.join(os.path.abspath(os.path.join(os.path.join(dirname, os.pardir), os.pardir)), 'data')
 
 """
 Need to create a big dataframe. For each csv file we should add the data to the dataframe,
