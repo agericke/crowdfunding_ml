@@ -1,3 +1,4 @@
 beatifulsoup4
 lxml
 pickle
+pandas
