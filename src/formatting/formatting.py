@@ -39,8 +39,9 @@ data = pd.read_csv(os.path.join(datadir, "2016-05-15T020446/Kickstarter001.csv")
 #to_drop2 = ['photo','staff_pick','currency_symbol','currency_trailing_code','state_changed_at',
 #            'slug','disable_communication','creator','spotlight','profile','urls','source_url']
 #data.drop(to_drop2, inplace=True, axis=1)
+
 #Here is were you upload the merged data  
-#data=df_total
+data=df_total
 
 #data.set_index('id',inplace=True)
 
@@ -74,6 +75,19 @@ data['month_launched'] = data.apply(lambda row: time.strftime('%b', time.localti
 data['weekday_launched'] = data.apply(lambda row: time.strftime('%a', time.localtime(row.launched_at)), axis=1)
 data['launched_at'] = data.apply(lambda row: datetime.datetime.fromtimestamp(row.launched_at), axis=1)
 data['deadline'] = data.apply(lambda row: datetime.datetime.fromtimestamp(row.deadline), axis=1)
+
+#Plot the amount of projects per year
+fig, (ax1,ax2) = plt.subplots(1, 2, figsize=(25,12))
+data.groupby('year_launched').year_launched.count().plot(kind='bar', ax=ax1, color='green')
+ax1.set_title('Number of Projects per Year')
+ax1.set_xlabel('')
+
+stateDistYear1 = pd.get_dummies(data.set_index('year_launched').state).groupby('year_launched').sum()
+#stateDistYear1.columns = ['failed', 'successful']
+
+stateDistYear1.plot(kind='bar', ax=ax2)
+ax2.set_title('State distribution of projects')
+ax2.set_xlabel('Year')
 
 #Find out the length of the name, the amount of words used
 data['name_length'] = data['name'].str.split().str.len()
@@ -171,7 +185,7 @@ data2 = data[(data['state'] == 'failed') | (data['state'] == 'successful')]
 #since it is a low amount to predict correctly, to OTHER
 countryCount=data2.groupby('country2').country2.count()
 countryCount=countryCount.sort_values()
-countries=countryCount[countryCount < 31]
+countries=countryCount[countryCount < 51]
 countries=list(countries.index.values)
 data2.loc[data2['country2'].isin(countries),'country2'] = 'OTHER'
 
@@ -208,28 +222,30 @@ corr=data2[['backers_count','usd_pledged','usd_goal','duration','name_length','d
 # Plotting
 
 fig, ((ax1, ax2, ax3), (ax4, ax5, ax6), (ax7, ax8, ax9)) = plt.subplots(3, 3, figsize=(15,15))
+color=['orange', 'blue', 'pink', 'red', 'green', 'yellow', 'cyan']
+color2 = cm.CMRmap(np.linspace(0.1,0.9,data2.main_category.nunique()))
 
-data2.groupby('state').state.count().plot(kind='bar', ax=ax1)
+data2.groupby('state').state.count().plot(kind='bar', ax=ax1, color=color)
 ax1.set_title('Number of Projects per State')
 ax1.set_xlabel('')
 
-data2.groupby('state').usd_goal.median().plot(kind='bar', ax=ax2)
+data2.groupby('state').usd_goal.median().plot(kind='bar', ax=ax2, color=color)
 ax2.set_title('Median project goal ($)')
 ax2.set_xlabel('')
 
-data2.groupby('state').usd_pledged.median().plot(kind='bar', ax=ax3)
+data2.groupby('state').usd_pledged.median().plot(kind='bar', ax=ax3, color=color)
 ax3.set_title('Median project pledged ($)')
 ax3.set_xlabel('')
 
-data2.groupby('state').backers_count.median().plot(kind='bar', ax=ax4)
+data2.groupby('state').backers_count.median().plot(kind='bar', ax=ax4, color=color)
 ax4.set_title('Median project backers')
 ax4.set_xlabel('')
 
-data2.groupby('state').duration.mean().plot(kind='bar', ax=ax5)
+data2.groupby('state').duration.mean().plot(kind='bar', ax=ax5, color=color)
 ax5.set_title('Mean project duration from launch to deadline')
 ax5.set_xlabel('')
 
-data2.groupby('state').name_length.mean().plot(kind='bar', ax=ax6)
+data2.groupby('state').name_length.mean().plot(kind='bar', ax=ax6, color=color)
 ax6.set_title('Mean name length of project')
 ax6.set_xlabel('')
 
@@ -239,15 +255,15 @@ ax6.set_xlabel('')
 #ax7.set_title('Proportion that are staff picks')
 #ax7.set_xlabel('')
 
-data2.groupby('state').competitors.mean().plot(kind='bar', ax=ax7)
+data2.groupby('state').competitors.mean().plot(kind='bar', ax=ax7, color=color)
 ax7.set_title('Median number of competitors')
 ax7.set_xlabel('')
 
-data2.groupby('state').description_length.mean().plot(kind='bar', ax=ax8)
+data2.groupby('state').description_length.mean().plot(kind='bar', ax=ax8, color=color)
 ax8.set_title('Mean description length of project')
 ax8.set_xlabel('')
 
-data2.groupby('state').days_until_launched.mean().plot(kind='bar', ax=ax9)
+data2.groupby('state').days_until_launched.mean().plot(kind='bar', ax=ax9, color=color)
 ax9.set_title('Mean project duration until launched')
 ax9.set_xlabel('')
 
@@ -257,38 +273,38 @@ plt.show()
 
 fig, ((ax1, ax2), (ax3, ax4), (ax5, ax6), (ax7,ax8)) = plt.subplots(4, 2, figsize=(20,20))
 
-data2.groupby('main_category').main_category.count().plot(kind='bar', ax=ax1)
+data2.groupby('main_category').main_category.count().plot(kind='bar', ax=ax1, color=color2)
 ax1.set_title('Number of projects')
 ax1.set_xlabel('')
 
-data2.groupby('main_category').usd_goal.median().plot(kind='bar', ax=ax2)
+data2.groupby('main_category').usd_goal.median().plot(kind='bar', ax=ax2, color=color2)
 ax2.set_title('Median project goal ($)')
 ax2.set_xlabel('')
 
-data2.groupby('main_category').usd_pledged.median().plot(kind='bar', ax=ax3)
+data2.groupby('main_category').usd_pledged.median().plot(kind='bar', ax=ax3, color=color2)
 ax3.set_title('Median pledged per project ($)')
 ax3.set_xlabel('')
 
-stateDistCat.div(stateDistCat.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax4)
+stateDistCat.div(stateDistCat.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax4, color=color2)
 ax4.set_title('Proportion of successful projects')
 ax4.set_xlabel('')
 
-data2.groupby('main_category').backers_count.median().plot(kind='bar', ax=ax5)
+data2.groupby('main_category').backers_count.median().plot(kind='bar', ax=ax5, color=color2)
 ax5.set_title('Median backers per project')
 ax5.set_xlabel('')
 
-data2.groupby('main_category').pledge_per_backer.median().plot(kind='bar', ax=ax6)
+data2.groupby('main_category').pledge_per_backer.median().plot(kind='bar', ax=ax6, color=color2)
 ax6.set_title('Median pledged per backer ($)')
 ax6.set_xlabel('')
 
-data2.groupby('main_category').competitors.median().plot(kind='bar', ax=ax7)
+data2.groupby('main_category').competitors.median().plot(kind='bar', ax=ax7, color=color2)
 ax7.set_title('Median number of competitors')
 ax7.set_xlabel('')
 
 stateDistComp = pd.get_dummies(data2.set_index('comp_range').state).groupby('comp_range').sum()
 stateDistComp.columns = ['failed', 'successful']
 
-stateDistComp.div(stateDistComp.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax8)
+stateDistComp.div(stateDistComp.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax8, color=color2)
 ax8.set_title('Proportion of successful projects')
 ax8.set_xlabel('Competitors Range')
 
@@ -300,7 +316,7 @@ fig, ((ax1, ax2), (ax3, ax4), (ax5, ax6), (ax7, ax8), (ax9, ax10)) = plt.subplot
 stateDistCountry = pd.get_dummies(data2.set_index('country').state).groupby('country').sum()
 stateDistCountry.columns = ['failed', 'successful']
 
-stateDistCountry.div(stateDistCountry.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax1)
+stateDistCountry.div(stateDistCountry.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax1, color=color2)
 ax1.set_title('Proportion of successful projects')
 ax1.set_xlabel('Country')
 
@@ -309,7 +325,7 @@ stateDistMonth.columns = ['failed', 'successful']
 stateDistMonth.index = stateDistMonth.index.str.strip()
 stateDistMonth = stateDistMonth.reindex(['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'])
 
-stateDistMonth.div(stateDistMonth.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax2)
+stateDistMonth.div(stateDistMonth.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax2, color=color2)
 ax2.set_title('Proportion of successful projects')
 ax2.set_xlabel('Month')
 
@@ -327,7 +343,7 @@ ax4.set_xlabel('Year')
 stateDistCurr = pd.get_dummies(data2.set_index('currency').state).groupby('currency').sum()
 stateDistCurr.columns = ['failed', 'successful']
 
-stateDistCurr.div(stateDistCurr.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax5)
+stateDistCurr.div(stateDistCurr.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax5, color=color2)
 ax5.set_title('Proportion of successful projects')
 ax5.set_xlabel('Currency')
 
@@ -336,35 +352,35 @@ stateDistWeekday.columns = ['failed', 'successful']
 stateDistWeekday.index = stateDistWeekday.index.str.strip()
 stateDistWeekday = stateDistWeekday.reindex(['Mon','Tue','Wed','Thu','Fri','Sat','Sun'])
 
-stateDistWeekday.div(stateDistWeekday.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax6)
+stateDistWeekday.div(stateDistWeekday.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax6, color=color2)
 ax6.set_title('Proportion of successful projects')
 ax6.set_xlabel('Weekday')
 
 stateDistUS = pd.get_dummies(dataUS.set_index('region_state').state).groupby('region_state').sum()
 stateDistUS.columns = ['failed', 'successful']
 
-stateDistUS.div(stateDistUS.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax7)
+stateDistUS.div(stateDistUS.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax7, color=color2)
 ax7.set_title('Proportion of successful projects in US')
 ax7.set_xlabel('US State')
 
 stateDistCountry2 = pd.get_dummies(data2.set_index('country2').state).groupby('country2').sum()
 stateDistCountry2.columns = ['failed', 'successful']
 
-stateDistCountry2.div(stateDistCountry2.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax8)
+stateDistCountry2.div(stateDistCountry2.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax8, color=color2)
 ax8.set_title('Proportion of successful projects')
 ax8.set_xlabel('Country True')
 
 stateDistGoal = pd.get_dummies(data2.set_index('goal_range').state).groupby('goal_range').sum()
 stateDistGoal.columns = ['failed', 'successful']
 
-stateDistGoal.div(stateDistGoal.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax9)
+stateDistGoal.div(stateDistGoal.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax9, color=color2)
 ax9.set_title('Proportion of successful projects')
 ax9.set_xlabel('Goal Range')
 
 stateDistType = pd.get_dummies(data2.set_index('type').state).groupby('type').sum()
 stateDistType.columns = ['failed', 'successful']
 
-stateDistType.div(stateDistType.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax10)
+stateDistType.div(stateDistType.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax10, color=color2)
 ax10.set_title('Proportion of successful projects')
 ax10.set_xlabel('Type of location')
 
@@ -393,4 +409,5 @@ X = pd.DataFrame(scale.fit_transform(X1), columns=list(X1.columns))
 
 #Finally, the data is separated into training and testing set
 X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.25, random_state=22333)
+
 
