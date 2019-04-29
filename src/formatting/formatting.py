@@ -15,40 +15,76 @@ import os, sys
 import datetime
 from datetime import date
 import time
+import pickle
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 #%matplotlib inline
 
-# Initial directories set up
-dirname = os.path.dirname(os.path.abspath('__file__'))
-datadir = os.path.join(os.path.abspath(os.path.join(os.path.join(dirname, os.pardir), os.pardir)), 'data')
 
-"""
-Need to create a big dataframe. For each csv file we should add the data to the dataframe,
-check if the column names coincide and expand the dataframe.
+def initial_setup():
+    """
+    Create Initial setup of directories variables, and dataframe vars to use.
+    Returns:
+      A tuple containing:
+          - datadir: Absolute Path to the data directory of the project.
+          - dirname: Absolute Path of directory that conatins this file.
+          - colnames: A list containing the initial colnames of the dataframe.
+    """
+    # Initial directories set up
+    dirname = os.path.dirname(os.path.abspath('__file__'))
+    datadir =  os.path.join(os.path.abspath(os.path.join(os.path.join(dirname, os.pardir), os.pardir)), 'data')
+    initial_colnames = sorted(['backers_count', 'blurb', 'category', 'country', 'created_at', 'state_changed_at', 'currency', 'deadline', 'goal', 'id', 'launched_at', 'location', 'name', 'pledged', 'state', 'static_usd_rate', 'usd_pledged'])
+    return dirname, datadir, initial_colnames
 
-Loop through all folders, and add a column to each project that represents the year
-and the season of the year.
-"""
-data = pd.read_csv(os.path.join(datadir, "2016-05-15T020446/Kickstarter001.csv"))
 
-#First lets drop the columns that have no values
-#to_drop = ['friends','is_starred','is_backing','permissions']
-#data.drop(to_drop, inplace=True, axis=1)
-#Now we will drop the columns/variables that we have determine have no value to our studyxº
-#to_drop2 = ['photo','staff_pick','currency_symbol','currency_trailing_code','state_changed_at',
-#            'slug','disable_communication','creator','spotlight','profile','urls','source_url']
-#data.drop(to_drop2, inplace=True, axis=1)
+def read_from_disk(filename):
+    """
+    Read a dataframe from a filename in disk.
+    Params:
+        filename....Path to the file.
+    Returns:
+        A pandas dataframe.
+    """
+    return pickle.load(open(filename, 'rb'))
 
-#Here is were you upload the merged data  
-data=df_total
+
+def check_missing_values(data):
+	"""
+	Check the number of missing values that we have. Notice that this function
+	will count 
+	Params:
+		data....Dataframe to check the missing values.
+	Returns:
+		Prints a summary of the number and % of missing values
+	"""
+	total_rows = data.shape[0]
+	na_col_counts = data.isna().sum()
+	for idx in na_col_counts.index:
+		na_number = na_col_counts[idx]
+		print("Total number of NA values in column %s is %d" % (str(idx), na_number))
+		pct_number = (na_number/total_rows) * 100
+		print("Percentage of Na in column %s is %.2f %%\n" % (str(idx), pct_number))
+
+# 0 - Initial directories and colnames set up
+dirname, datadir, initial_colnames = initial_setup()
+
+
+# 1 - Load from disk the complete Merged Dataframe.
+filename = os.path.join(datadir, 'dataframe_total.pkl')
+print("Dataframe total is read from file %s" % filename)
+data = read_from_disk(filename)
+# Print summary of dataframe
+print("Dataframe contains %d projects and %d columns for each project" % (data.shape[0], data.shape[1]))
 
 #data.set_index('id',inplace=True)
 
-#Look for missing values
-print(data.isna().sum()) 
+
+# 2 - Look for missing values for every row and print summary.
+check_missing_values(data)
 #The amount of missing values is low, really low percentage, so we can drop them.
 data = data.dropna()
+
+# TODO: NEED TO CHECK OTHER TYPES OF EMPTY VALUES ("empty strings for example")
 
 #Create usd_goal, where we convert the goal into usd
 data["usd_goal"] = data["goal"]*data["static_usd_rate"]
