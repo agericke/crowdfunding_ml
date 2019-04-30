@@ -854,7 +854,7 @@ def main():
     # 26 - Data stratified sampling.
     print("\n\n\nStep 26: Data sampling into training and test dataset.")
     #Finally, the data is separated into training and testing set
-    # TODO: Are we uding stratified sampling as seen in class or a sampling type that allows having equal distribution of every possible value of the target var in each set?
+    # TODO: Are we using stratified sampling as seen in class or a sampling type that allows having equal distribution of every possible value of the target var in each set?
     X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.25, random_state=22333)
     
     
@@ -869,6 +869,15 @@ def main():
     filename = os.path.join(datadir, 'formatting_ML_data3.pkl')
     store_dataframe(data3, filename)
     print("Machine Learning dataframe 'data3' succesfully saved to %s" % filename)
+    filename = os.path.join(datadir, 'formatting_ML_X.pkl')
+    store_dataframe(X, filename)
+    print("Machine Learning 'X' dataframe succesfully saved to %s" % filename)
+    filename = os.path.join(datadir, 'formatting_ML_y.pkl')
+    store_dataframe(y, filename)
+    print("Machine Learning 'y' array succesfully saved to %s" % filename)
+    
+    # TODO: Maybe it is better having one figure per plot instead of plotting several figures in one plot. This will make it easier
+    # for including the plots in the presentation afterwards as well as in the report that we will need to generate.
 
     
 if __name__ == "__main__":
