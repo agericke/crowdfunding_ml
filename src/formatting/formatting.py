@@ -867,3 +867,8 @@ def main():
     
 if __name__ == "__main__":
     main()    
+
+dirname = os.path.dirname(os.path.abspath('__file__'))
+datadir =  os.path.join(os.path.abspath(os.path.join(os.path.join(dirname, os.pardir), os.pardir)), 'data')
+filename = os.path.join(datadir, 'formatting_initial_data.pkl')
+dataprep = read_from_disk(filename)
