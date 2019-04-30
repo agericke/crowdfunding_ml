@@ -334,6 +334,9 @@ def obtain_success_by_goal_range(data, ranges, range_values):
             data.loc[(data['usd_goal'] >= ranges[i-1])&(data['usd_goal'] < ranges[i]),'goal_range'] = range_values[i]
     # TODO: REALLY IMPORTANT: DEFINE A WAY TO OBTAIN OPTIMAL RANGES SEPARATORS (JUST AS DID IN CLASS ONCE)
     # TODO: PROFESSOR DID IT BY SCATTER PLOTTING VARIABLE AGAINST VAR OBJECTIVE (SUCCESS RATE IN OUR CASE) IF I REMEMBER WELL.
+    data['goal_cat_division'] =  data.groupby(['main_category'])['usd_goal'].transform(
+                     lambda x: pd.qcut(x, [0, .25, .50, .75, 1.0], labels =['A','B','C','D']))
+    
     print("Succesfully created success rate var by ranges")
     return data
 
@@ -369,6 +372,8 @@ def run_competitors_evaluation(data):
     data.loc[(data['competitors'] >= 150)&(data['competitors'] < 200),'comp_range'] = 'F'
     data.loc[data['competitors'] >= 200,'comp_range'] = 'G'
     
+    data['duration_cat_division'] =  data.groupby(['main_category'])['duration'].transform(
+                     lambda x: pd.qcut(x, [0, .25, .50, .75, 1.0], labels =False, duplicates='drop'))
     return data
 
 
@@ -387,11 +392,6 @@ def refractor_country_projects(dataframe):
     countries=countryCount[countryCount < 51]
     countries=list(countries.index.values)
     dataframe.loc[dataframe['country2'].isin(countries),'country2'] = 'OTHER'
-    
-    # TODO: Can we erase this lines?
-    #data2 = data2[~data2['country2'].isin(countries)]
-    countryCount2=dataframe.groupby('country2').country2.count()
-    countryCount2=countryCount2.sort_values()
     
     return dataframe
 
@@ -412,7 +412,7 @@ def us_projects_df(data2, initial_data):
     USprojectPer=len(dataUS.index)/len(data2.index)*100
     print("%% of projects that are ony form US is %.2f" % USprojectPer)
     
-    #State analysis. There is a small percentage with a wrong classification. Classify as OTHER
+    #State analysis. There is a small percentage with a wrong classification. Classify as OTHER. Delete?
     stateCount=dataUS.groupby('region_state').region_state.count()
     dataUS.loc[dataUS['region_state']=='Canton of Basel-Country','region_state'] = 'OTHER'
     dataUS.loc[dataUS['region_state']=='location','region_state'] = 'OTHER'
@@ -458,14 +458,6 @@ def plot_figures_about_states(data2, filename):
     data2.groupby('state').name_length.mean().plot(kind='bar', ax=ax6, color=color)
     ax6.set_title('Mean name length of project')
     ax6.set_xlabel('')
-    
-    
-    # TODO: Can we erase this lines?
-    #staffPickDistr = pd.get_dummies(data2.set_index('state').staff_pick).groupby('state').sum()
-    #staffPickDistr.columns = ['false', 'true']
-    #staffPickDistr.div(staffPickDistr.sum(axis=1), axis=0).true.plot(kind='bar', ax=ax7)
-    #ax7.set_title('Proportion that are staff picks')
-    #ax7.set_xlabel('')
     
     data2.groupby('state').competitors.mean().plot(kind='bar', ax=ax7, color=color)
     ax7.set_title('Median number of competitors')
@@ -673,15 +665,12 @@ def main():
     # Print summary of dataframe
     print("Dataframe contains %d projects and %d columns for each project\n" % (data.shape[0], data.shape[1]))
     
-    # TODO: Erase?
-    #data.set_index('id',inplace=True)
-    
     
     # 2 - Look for missing values for every row and print summary.
     print("\n\n\nStep 2: Look for missing values for every row and print summary.")
     data = check_missing_values_and_drop(data, True)
     print("As we can see, we have very low percentage of missing values,the highest column with missing values is location column with only a 0.34 %, so we decided to drop the missing values")
-    # TODO: NEED TO CHECK OTHER TYPES OF EMPTY VALUES ("empty strings for example")
+    # TODO: NEED TO CHECK OTHER TYPES OF EMPTY VALUES ("empty strings for example") They have already been checked right?
     
     
     # 3 - Create new variables from present columns. The new columns to create are:
@@ -694,8 +683,6 @@ def main():
     
     # 4 - Create year, month and week vars from the launched_at var, and convert to 
     #    date type launched_at and deadline vars   
-    # TODO: Can we erase this line?
-    #day=time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(1347517370))
     print("\n\n\nStep 4: Create year, month and week vars from the launched_at var, and convert to date type launched_at and deadline vars.")
     data = create_new_date_cols(data, 'launched_at', '%Y', 'year_launched', 1)
     data = create_new_date_cols(data, 'launched_at', '%b', 'month_launched', 1)
@@ -771,7 +758,7 @@ def main():
     
     # 14 - Calculate the number of competitors in the same category, with the same goal range and in a time perios
     # same year and month
-    print("\n\n\nStep 14: Calculate the number of competitors in the same category, with the same goal range and in a time perio dsame year and month")
+    print("\n\n\nStep 14: Calculate the number of competitors in the same category, with the same goal range and in a time period same year and month")
     data = run_competitors_evaluation(data)
     
     
@@ -794,8 +781,6 @@ def main():
     #Check if the data frame is in appropriate format:
     data2.head()
     # TODO: Can we erase this line?
-    #Finally, we drop the id variable. We dont need it for the models
-    #data2.drop("id", inplace=True, axis=1)
     
     
     # 17 - Lets get a dataframe only with the projects in the US.
@@ -864,7 +849,7 @@ def main():
     store_dataframe(data, filename)
     print("Initial dataframe 'data' succesfully saved to %s" % filename)
     filename = os.path.join(datadir, 'formatting_intermediate_data2.pkl')
-    store_dataframe(data, filename)
+    store_dataframe(data2, filename)
     print("Intermediate dataframe 'data2' succesfully saved to %s" % filename)
     filename = os.path.join(datadir, 'formatting_ML_data3.pkl')
     store_dataframe(data3, filename)
