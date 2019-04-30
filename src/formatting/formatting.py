@@ -673,6 +673,8 @@ def main():
     data = check_missing_values_and_drop(data, True)
     print("As we can see, we have very low percentage of missing values,the highest column with missing values is location column with only a 0.34 %, so we decided to drop the missing values")
     print("Also, studying the missing data, we discover that out of 1091 rows with missing data, 1087 are from the US, 2 from Great Britain, 1 from Denmark and 1 from Austria")
+    print("The distribution of the missing values across the main_category variable is:\n)
+    print("art             118\ncomics           14\ncrafts            9\ndance            18\ndesign           12\nfashion           6\nfilm & video    279\nfood            10\ngames            49\njournalism       55\nmusic           258\nphotography      49\npublishing      141\ntechnology       51\ntheater          22")
     # TODO: NEED TO CHECK OTHER TYPES OF EMPTY VALUES ("empty strings for example") They have already been checked right?
     
     
