@@ -74,6 +74,8 @@ def check_missing_values_and_drop(data, drop=False):
 		Prints a summary of the number and % of missing values.
         The dataframe with no missing values
 	"""
+    #dataMis=data[data.isnull().any(axis=1)]
+    #print(dataMis.groupby('country').country.count())
 	total_rows = data.shape[0]
 	na_col_counts = data.isna().sum()
 	for idx in na_col_counts.index:
@@ -372,7 +374,7 @@ def run_competitors_evaluation(data):
     data.loc[(data['competitors'] >= 150)&(data['competitors'] < 200),'comp_range'] = 'F'
     data.loc[data['competitors'] >= 200,'comp_range'] = 'G'
     
-    data['duration_cat_division'] =  data.groupby(['main_category'])['duration'].transform(
+    data['competitors_cat_division'] =  data.groupby(['main_category'])['competitors'].transform(
                      lambda x: pd.qcut(x, [0, .25, .50, .75, 1.0], labels =False, duplicates='drop'))
     return data
 
@@ -670,6 +672,7 @@ def main():
     print("\n\n\nStep 2: Look for missing values for every row and print summary.")
     data = check_missing_values_and_drop(data, True)
     print("As we can see, we have very low percentage of missing values,the highest column with missing values is location column with only a 0.34 %, so we decided to drop the missing values")
+    print("Also, studying the missing data, we discover that out of 1091 rows with missing data, 1087 are from the US, 2 from Great Britain, 1 from Denmark and 1 from Austria")
     # TODO: NEED TO CHECK OTHER TYPES OF EMPTY VALUES ("empty strings for example") They have already been checked right?
     
     
@@ -745,7 +748,13 @@ def main():
     # We fill all nan with zero
     data.fillna(0,inplace=True)
     check_missing_values_and_drop(data, drop=False)
-    
+    print("In the case of pledge_per_backer, there are missing values, because some of the projects have 0 usd_pledged and 0 backers, and so the division becomes nan.")
+    print('The missing values in the region_state variable per country, are as follows:\n')
+    print('AQ  Antartica  23\nNZ  New Zealand  23\nMK  Macedonia  15\nAW  Aruba  1\nCW  Curacau   3\nGI  Gibraltar   4\nKI  Kiribati  1\nMO  Macao   1\nPN Pitcairn    1\nSX Sint Maarten  3\nVA  Vatican City  1\nXK Kosovo    7')
+    print('As we can see, most of the regions that are missing are either from a small country, an island or Antartica\n')
+    print('The missing values in the region_state variable per main_category, are as follows:\n')
+    print('art            10\ncrafts          1\ndesign          1\nfashion         1\nfilm&video     13\nfood            5\ngames          18\njournalism      3\nmusic           4\nphotography    11\npublishing      9\ntechnology      6\ntheater         1\n')
+    print('As we can see the missing values in the region_state variable have more to do with the country than with the category.')
     
     # 13 - Create a variable to evaluate the proportion of succesful projects depending
     # on the goal money range
@@ -777,10 +786,6 @@ def main():
     # since it is a low amount to predict correctly, to OTHER.
     print("\n\n\nStep 16: Count the number of projects from each country and change the country of those that have less than 16, since it is a low amount to predict correctly, to OTHER.")
     data2 = refractor_country_projects(data2)
-    
-    #Check if the data frame is in appropriate format:
-    data2.head()
-    # TODO: Can we erase this line?
     
     
     # 17 - Lets get a dataframe only with the projects in the US.
@@ -868,7 +873,5 @@ def main():
 if __name__ == "__main__":
     main()    
 
-dirname = os.path.dirname(os.path.abspath('__file__'))
-datadir =  os.path.join(os.path.abspath(os.path.join(os.path.join(dirname, os.pardir), os.pardir)), 'data')
-filename = os.path.join(datadir, 'formatting_initial_data.pkl')
-dataprep = read_from_disk(filename)
+
+
