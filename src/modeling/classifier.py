@@ -82,20 +82,25 @@ def prepare_data_for_ML(df):
     
     return df, x, y
 
-def visualize_tree(model):
+def visualize_tree(model, x):
     """
     Visualize the decision tree
+    Params:
+        model: the decision tree model
+        x: the predictor variables
+    Return:
+        graph of the decision tree
     """
     class_names = ['Success', 'Failure']
     np.asarray(class_names)
     dot_data = tree.export_graphviz(model, out_file=None, 
-                      feature_names=list(x_train),  
+                      feature_names=list(x),  
                       class_names=class_names,
                       max_depth = 5,
                       filled=True, rounded=True,  
                       special_characters=True)  
     graph = graphviz.Source(dot_data)  
-    graph
+    return graph
 
 def main():
     print("Step 0: Initial directories and colnames set up")
@@ -111,6 +116,8 @@ def main():
     
     # 2 - Process data frame for machine learning
     df, x, y = prepare_data_for_ML(data)
+    x = x.loc[:20000,:]
+    y = y.loc[:20000]
     
     # Train/ test split
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=22333)
@@ -165,12 +172,19 @@ def main():
     print("Recall score : %s" %rec )
     
     # Visualize the decision tree
-    visualize_tree(tree_model)
+#     graph = visualize_tree(tree_model, x_train)
+    class_names = ['Success', 'Failure']
+    np.asarray(class_names)
+    dot_data = tree.export_graphviz(tree_model, out_file=None,
+                                   feature_names=list(x),  
+                                   class_names=class_names) 
+    graph = graphviz.Source(dot_data) 
+    graph.render("Decision Tree") 
     
     # 6 - Grid Search CV to find best decision tree
     print("\n\n\nStep 5: Best Decision Tree Classifier using GridSearchCV")
     param_grid = {'max_depth': [None, 5, 10, 15, 20], 'min_samples_leaf': [1, 2, 3, 5], 'min_samples_split': [2, 5, 10]}
-    tree_classifier = GridSearchCV(DecisionTreeClassifier(), param_grid)
+    tree_classifier = GridSearchCV(DecisionTreeClassifier(), param_grid, cv=5)
     tree_classifier.fit(x_train, y_train)
     y_pred = tree_classifier.predict(x_test)
     
@@ -184,18 +198,18 @@ def main():
     print("Recall score : %s" %rec )
     
     # Visualize the decision tree
-    visualize_tree(tree_classifier)
+#     visualize_tree(tree_classifier, x_train)
     
     #  - Save different models obtained.
     print("\n\n\nStep 6: Save different models obtained.")
     filename = os.path.join(datadir, 'naive_bayes_classifier.pkl')
-    store_dataframe(gnb, filename)
+    store_model(gnb, filename)
     print("Model Naive Bayes succesfully saved to %s" % filename)
     filename = os.path.join(datadir, 'logistic_regression_classifier.pkl')
-    store_dataframe(log_reg, filename)
+    store_model(log_reg, filename)
     print("Model Logistc Regression succesfully saved to %s" % filename)
     filename = os.path.join(datadir, 'decision_tree_classifier.pkl')
-    store_dataframe(tree_classifier, filename)
+    store_model(tree_classifier, filename)
     print("Model Decision Tree succesfully saved to %s" % filename)
     
 if __name__ == "__main__":
