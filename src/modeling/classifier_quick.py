@@ -191,7 +191,7 @@ def main():
     plt.show()
     
     # 7 - Save different models obtained.
-    print("\n\n\nStep 8: Save different models obtained.")
+    print("\n\n\nStep 6: Save different models obtained.")
     filename = os.path.join(datadir, 'naive_bayes_classifier.pkl')
     store_model(gnb, filename)
     print("Model Naive Bayes succesfully saved to %s" % filename)
