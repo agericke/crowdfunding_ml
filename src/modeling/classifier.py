@@ -116,8 +116,8 @@ def main():
     
     # 2 - Process data frame for machine learning
     df, x, y = prepare_data_for_ML(data)
-    x = x.loc[:20000,:]
-    y = y.loc[:20000]
+#     x = x.loc[:20000,:]
+#     y = y.loc[:20000]
     
     # Train/ test split
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=22333)
