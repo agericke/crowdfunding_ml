@@ -19,6 +19,7 @@ import time
 import pickle
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
+#from ggplot import *
 #%matplotlib inline
 
 
@@ -64,28 +65,28 @@ def store_dataframe(dataframe, filename):
     
 
 def check_missing_values_and_drop(data, drop=False):
-	"""
-	Check the number of missing values that we have. Notice that this function
-	will count 
-	Params:
-		data....Dataframe to check the missing values.
+    """
+    Check the number of missing values that we have. Notice that this function
+    will count 
+    Params:
+        data....Dataframe to check the missing values.
         drop....Boolean to indicate if we want to drop missing values or not.
-	Returns:
-		Prints a summary of the number and % of missing values.
+    Returns:
+        Prints a summary of the number and % of missing values.
         The dataframe with no missing values
-	"""
+    """
     #dataMis=data[data.isnull().any(axis=1)]
     #print(dataMis.groupby('country').country.count())
-	total_rows = data.shape[0]
-	na_col_counts = data.isna().sum()
-	for idx in na_col_counts.index:
-		na_number = na_col_counts[idx]
-		print("Total number of NA values in column %s is %d" % (str(idx), na_number))
-		pct_number = (na_number/total_rows) * 100
-		print("Percentage of Na in column %s is %.4f %%\n" % (str(idx), pct_number))
-	if drop:
-		data = data.dropna()
-	return data
+    total_rows = data.shape[0]
+    na_col_counts = data.isna().sum()
+    for idx in na_col_counts.index:
+        na_number = na_col_counts[idx]
+        print("Total number of NA values in column %s is %d" % (str(idx), na_number))
+        pct_number = (na_number/total_rows) * 100
+        print("Percentage of Na in column %s is %.4f %%\n" % (str(idx), pct_number))
+    if drop:
+        data = data.dropna()
+    return data
     # TODO: See if we can check the missing indexes for each column and run a study on them.
     # TODO: Run experiments to try to identify is the missing values are mainly because of a reason or one type of project, or specific to one period of time (see if they are missing at random, missing not at random...)
     
@@ -375,7 +376,7 @@ def run_competitors_evaluation(data):
     data.loc[data['competitors'] >= 200,'comp_range'] = 'G'
     
     data['competitors_cat_division'] =  data.groupby(['main_category'])['competitors'].transform(
-                     lambda x: pd.qcut(x, [0, .25, .50, .75, 1.0], labels =False, duplicates='drop'))
+                     lambda x: pd.qcut(x, [0, .25, .50, .75, 1.0], labels =['A','B','C','D']))
     return data
 
 
@@ -532,7 +533,7 @@ def plot_figures_about_main_category(data2, stateDistCat, filename):
     fig.savefig(filename, dpi=fig.dpi)
     
 
-def plot_other_figures(data2, dataUS, filename):
+def plot_other_figures(data2, dataUS, filename, filename1,filename2, filename3, filename4, filename5, filename6, filename7, filename8, filename9):
     """
     Plot and save several figure.
     Params:
@@ -542,84 +543,111 @@ def plot_other_figures(data2, dataUS, filename):
     Returns:
         Nothing. Saves to disk figure
     """ 
-    fig, ((ax1, ax2), (ax3, ax4), (ax5, ax6), (ax7, ax8), (ax9, ax10)) = plt.subplots(5, 2, figsize=(30,40))
     color2 = cm.CMRmap(np.linspace(0.1,0.9,data2.main_category.nunique()))
     
     stateDistCountry = pd.get_dummies(data2.set_index('country').state).groupby('country').sum()
     stateDistCountry.columns = ['failed', 'successful']
-    
+    fig1, (ax1) = plt.subplots(1,1, figsize=(12,8))
     stateDistCountry.div(stateDistCountry.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax1, color=color2)
     ax1.set_title('Proportion of successful projects')
     ax1.set_xlabel('Country')
+    plt.show()
+    # TODO: Comment if running from console.
+    fig1.savefig(filename, dpi=fig1.dpi)
     
     stateDistMonth = pd.get_dummies(data2.set_index('month_launched').state).groupby('month_launched').sum()
     stateDistMonth.columns = ['failed', 'successful']
     stateDistMonth.index = stateDistMonth.index.str.strip()
     stateDistMonth = stateDistMonth.reindex(['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'])
-    
+    fig2, (ax2) = plt.subplots(1,1, figsize=(12,8))
     stateDistMonth.div(stateDistMonth.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax2, color=color2)
     ax2.set_title('Proportion of successful projects')
     ax2.set_xlabel('Month')
+    plt.show()
+    # TODO: Comment if running from console.
+    fig2.savefig(filename1, dpi=fig2.dpi)
     
     stateDistYear = pd.get_dummies(data2.set_index('year_launched').state).groupby('year_launched').sum()
     stateDistYear.columns = ['failed', 'successful']
-    
+    fig3, (ax3) = plt.subplots(1,1, figsize=(12,8))
     stateDistYear.div(stateDistYear.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax3, color='green')
     ax3.set_title('Proportion of successful projects')
     ax3.set_xlabel('Year')
+    plt.show()
+    # TODO: Comment if running from console.
+    fig3.savefig(filename2, dpi=fig3.dpi)
     
+    fig4, (ax4) = plt.subplots(1,1, figsize=(12,8))
     stateDistYear.plot(kind='bar', ax=ax4)
     ax4.set_title('Number of failed and successful projects')
     ax4.set_xlabel('Year')
+    plt.show()
+    # TODO: Comment if running from console.
+    fig4.savefig(filename3, dpi=fig4.dpi)
     
     stateDistCurr = pd.get_dummies(data2.set_index('currency').state).groupby('currency').sum()
     stateDistCurr.columns = ['failed', 'successful']
-    
+    fig5, (ax5) = plt.subplots(1,1, figsize=(12,8))
     stateDistCurr.div(stateDistCurr.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax5, color=color2)
     ax5.set_title('Proportion of successful projects')
     ax5.set_xlabel('Currency')
+    plt.show()
+    # TODO: Comment if running from console.
+    fig5.savefig(filename4, dpi=fig5.dpi)
     
     stateDistWeekday = pd.get_dummies(data2.set_index('weekday_launched').state).groupby('weekday_launched').sum()
     stateDistWeekday.columns = ['failed', 'successful']
     stateDistWeekday.index = stateDistWeekday.index.str.strip()
     stateDistWeekday = stateDistWeekday.reindex(['Mon','Tue','Wed','Thu','Fri','Sat','Sun'])
-    
+    fig6, (ax6) = plt.subplots(1,1, figsize=(12,8))
     stateDistWeekday.div(stateDistWeekday.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax6, color=color2)
     ax6.set_title('Proportion of successful projects')
     ax6.set_xlabel('Weekday')
+    plt.show()
+    # TODO: Comment if running from console.
+    fig6.savefig(filename5, dpi=fig6.dpi)
     
     stateDistUS = pd.get_dummies(dataUS.set_index('region_state').state).groupby('region_state').sum()
     stateDistUS.columns = ['failed', 'successful']
-    
+    fig7, (ax7) = plt.subplots(1,1, figsize=(12,8))
     stateDistUS.div(stateDistUS.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax7, color=color2)
     ax7.set_title('Proportion of successful projects in US')
     ax7.set_xlabel('US State')
+    plt.show()
+    # TODO: Comment if running from console.
+    fig7.savefig(filename6, dpi=fig7.dpi)
     
     stateDistCountry2 = pd.get_dummies(data2.set_index('country2').state).groupby('country2').sum()
     stateDistCountry2.columns = ['failed', 'successful']
-    
+    fig8, (ax8) = plt.subplots(1,1, figsize=(12,8))
     stateDistCountry2.div(stateDistCountry2.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax8, color=color2)
     ax8.set_title('Proportion of successful projects')
     ax8.set_xlabel('Country True')
+    plt.show()
+    # TODO: Comment if running from console.
+    fig8.savefig(filename7, dpi=fig8.dpi)
     
     stateDistGoal = pd.get_dummies(data2.set_index('goal_range').state).groupby('goal_range').sum()
     stateDistGoal.columns = ['failed', 'successful']
-    
+    fig9, (ax9) = plt.subplots(1,1, figsize=(12,8))
     stateDistGoal.div(stateDistGoal.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax9, color=color2)
     ax9.set_title('Proportion of successful projects')
     ax9.set_xlabel('Goal Range')
+    plt.show()
+    # TODO: Comment if running from console.
+    fig9.savefig(filename8, dpi=fig9.dpi)
     
     stateDistType = pd.get_dummies(data2.set_index('type').state).groupby('type').sum()
     stateDistType.columns = ['failed', 'successful']
-    
+    fig10, (ax10) = plt.subplots(1,1, figsize=(12,8))
     stateDistType.div(stateDistType.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax10, color=color2)
     ax10.set_title('Proportion of successful projects')
     ax10.set_xlabel('Type of location')
-    
-    fig.subplots_adjust(hspace=0.6)
-    # TODO: Comment if running from console.
     plt.show()
-    fig.savefig(filename, dpi=fig.dpi)
+    # TODO: Comment if running from console.
+    fig10.savefig(filename9, dpi=fig10.dpi)
+    
+    
     
     
 def prepare_data_for_ML(dataframe):
@@ -672,8 +700,9 @@ def main():
     print("\n\n\nStep 2: Look for missing values for every row and print summary.")
     data = check_missing_values_and_drop(data, True)
     print("As we can see, we have very low percentage of missing values,the highest column with missing values is location column with only a 0.34 %, so we decided to drop the missing values")
-    print("Also, studying the missing data, we discover that out of 1091 rows with missing data, 1087 are from the US, 2 from Great Britain, 1 from Denmark and 1 from Austria")
-    print("The distribution of the missing values across the main_category variable is:\n)
+    print("Also, studying the missing data, we discover that out of 1091 rows with missing data: \n")
+    print("United States     1087\nGreat Britain     2\nDenmark           1\nAustria           1\n")
+    print("The distribution of the missing values across the main_category variable is:\n")
     print("art             118\ncomics           14\ncrafts            9\ndance            18\ndesign           12\nfashion           6\nfilm & video    279\nfood            10\ngames            49\njournalism       55\nmusic           258\nphotography      49\npublishing      141\ntechnology       51\ntheater          22")
     # TODO: NEED TO CHECK OTHER TYPES OF EMPTY VALUES ("empty strings for example") They have already been checked right?
     
@@ -747,6 +776,7 @@ def main():
     #There are no missing values in the data frame except for the pledge_per_backer
     #variable. It is nan when both usd_pledged and backers are 0.
     check_missing_values_and_drop(data, drop=False)
+    data.loc[data['region_state'].isnull(),'region_state'] = 'None'
     # We fill all nan with zero
     data.fillna(0,inplace=True)
     check_missing_values_and_drop(data, drop=False)
@@ -822,8 +852,18 @@ def main():
     
     # 22 - Other plots.
     print("\n\n\nStep 22: Other plots.")
-    filename = os.path.join(imagesdir,'other_plots.png')
-    plot_other_figures(data2, dataUS, filename)
+    filename = os.path.join(imagesdir,'plot_per_country.png')
+    filename1 = os.path.join(imagesdir,'plot_per_month.png')
+    filename2 = os.path.join(imagesdir,'plot_per_year.png')
+    filename3 = os.path.join(imagesdir,'plot_per_year_dist.png')
+    filename4 = os.path.join(imagesdir,'plot_per_currency.png')
+    filename5 = os.path.join(imagesdir,'plot_per_weekday.png')
+    filename6 = os.path.join(imagesdir,'plot_per_state_US.png')
+    filename7 = os.path.join(imagesdir,'plot_per_countryTrue.png')
+    filename8 = os.path.join(imagesdir,'plot_per_goal_range.png')
+    filename9 = os.path.join(imagesdir,'plot_per_location.png')
+
+    plot_other_figures(data2, dataUS, filename,filename1, filename2, filename3, filename4, filename5, filename6, filename7, filename8, filename9)
     print("Other plots succesfully saved to file %s" % filename)
     
 
@@ -868,9 +908,6 @@ def main():
     store_dataframe(y, filename)
     print("Machine Learning 'y' array succesfully saved to %s" % filename)
     
-    # TODO: Maybe it is better having one figure per plot instead of plotting several figures in one plot. This will make it easier
-    # for including the plots in the presentation afterwards as well as in the report that we will need to generate.
-
     
 if __name__ == "__main__":
     main()    
