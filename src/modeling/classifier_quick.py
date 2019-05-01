@@ -97,8 +97,8 @@ def main():
     
     # 2 - Process data frame for machine learning
     df, x, y = prepare_data_for_ML(data)
-#     x = x.loc[50000:70000,:]
-#     y = y.loc[50000:70000]
+#     x = x.loc[150000:170000,:]
+#     y = y.loc[150000:170000]
     
     # Train/ test split
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=22333)
@@ -164,41 +164,15 @@ def main():
     graph = graphviz.Source(dot_data) 
     graph.render("Decision Tree") 
     
-    # 6 - Grid Search CV to find best decision tree
-    print("\n\n\nStep 5: Best Decision Tree Classifier using GridSearchCV")
-    param_grid = {'max_depth': [None, 5, 10, 15, 20], 'min_samples_leaf': [1, 2, 3, 5], 'min_samples_split': [2, 5, 10]}
-    tree_classifier = GridSearchCV(DecisionTreeClassifier(), param_grid, cv=5)
-    tree_classifier.fit(x_train, y_train)
-    y_pred = tree_classifier.predict(x_test)
-    
-    cm = confusion_matrix(y_test, y_pred, labels = [1, 0])
-    print("Confusion matrix : %s" %cm )
-    acc = accuracy_score(y_test, y_pred)
-    print("Accuracy score : %s" %acc )
-    prec = precision_score(y_test, y_pred)
-    print("Precision score : %s" %prec )
-    rec = recall_score(y_test, y_pred)
-    print("Recall score : %s" %rec )
-    
     # Plotting feature importance
     print("Plotting the top 20 Feature importances of the fitted decision tree: " )
-    feat_importances = pd.Series(tree_classifier.feature_importances_, index=x_train.columns)
+    feat_importances = pd.Series(tree_model.feature_importances_, index=x_train.columns)
     feat_importances.nlargest(20).plot(kind='barh')
     plt.show()
     
-    # Visualize the decision tree
-    dot_data = tree.export_graphviz(tree_classifier.best_estimator_, out_file=None, 
-                      feature_names=list(x_train),  
-                      class_names=class_names,
-                      max_depth = 7,
-                      filled=True, rounded=True,  
-                      special_characters=True)  
-    graph2 = graphviz.Source(dot_data)
-    graph2.render("Best Decision Tree")
-    
-    # 7 - Random Forest Classifier
-    print("\n\n\nStep 6: Random Forest Classifier.")
-    rf_default = RandomForestClassifier()
+    # 6 - Random Forest Classifier
+    print("\n\n\nStep 5: Random Forest Classifier.")
+    rf_default = RandomForestClassifier(n_estimators = 500)
     rf_default.fit(x_train, y_train)
     y_pred = rf_default.predict(x_test)
     
@@ -216,26 +190,7 @@ def main():
     feat_importances.nlargest(20).plot(kind='barh')
     plt.show()
     
-    # 8 - Grid Search CV to do hyperparameter tuning for Random Forest
-    print("\n\n\nStep 7: Best Random Forest Classifier using GridSearchCV")
-    param_grid_rf = {'n_estimators': [10, 50, 100, 500], 'max_depth': [None, 5, 10, 15, 20], 
-                     'min_samples_leaf': [1, 2, 3, 5], 'min_samples_split': [2, 5, 10]}
-    rf_best = GridSearchCV(RandomForestClassifier(), param_grid_rf, cv=5) # default: 3-fold cross validation
-    rf_best.fit(x_train, y_train)
-    y_pred = rf_best.predict(x_test)
-    
-    print("The best settings for Random Forest is: %s" %rf_best.best_params_)
-    
-    cm = confusion_matrix(y_test, y_pred, labels = [1, 0])
-    print("Confusion matrix : %s" %cm )
-    acc = accuracy_score(y_test, y_pred)
-    print("Accuracy score : %s" %acc )
-    prec = precision_score(y_test, y_pred)
-    print("Precision score : %s" %prec )
-    rec = recall_score(y_test, y_pred)
-    print("Recall score : %s" %rec )
-    
-    # 9 - Save different models obtained.
+    # 7 - Save different models obtained.
     print("\n\n\nStep 8: Save different models obtained.")
     filename = os.path.join(datadir, 'naive_bayes_classifier.pkl')
     store_model(gnb, filename)
@@ -244,10 +199,10 @@ def main():
     store_model(log_reg, filename)
     print("Model Logistc Regression succesfully saved to %s" % filename)
     filename = os.path.join(datadir, 'decision_tree_classifier.pkl')
-    store_model(tree_classifier.best_estimator_, filename)
+    store_model(tree_model, filename)
     print("Model Decision Tree succesfully saved to %s" % filename)
     filename = os.path.join(datadir, 'random_forest_classifier.pkl')
-    store_model(rf_best.best_estimator_, filename)
+    store_model(rf_default, filename)
     print("Model Random Forest succesfully saved to %s" % filename)
     
 if __name__ == "__main__":
