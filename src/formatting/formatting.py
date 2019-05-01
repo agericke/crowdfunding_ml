@@ -777,6 +777,8 @@ def main():
     #variable. It is nan when both usd_pledged and backers are 0.
     check_missing_values_and_drop(data, drop=False)
     data.loc[data['region_state'].isnull(),'region_state'] = 'None'
+    data.loc[data['sub_category'] == '','sub_category'] = 'None'
+
     # We fill all nan with zero
     data.fillna(0,inplace=True)
     check_missing_values_and_drop(data, drop=False)
@@ -792,8 +794,8 @@ def main():
     # on the goal money range
     print("\n\n\nStep 13: Calculate the percentage of success")
     # TODO: Really important, redefine ranges following a criteria.
-    ranges = [250, 500, 1000, 2000, 4000, 6000, 8000, 10000]
-    range_values = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I']
+    ranges = [250, 500, 1000, 10000, 20000, 100000, 1000000]
+    range_values = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     data = obtain_success_by_goal_range(data, ranges, range_values)
     
     
