@@ -14,7 +14,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
-import graphviz
+#import graphviz
 from sklearn import tree
 from sklearn.tree import export_graphviz
 import pickle
@@ -155,14 +155,14 @@ def main():
     # Visualize the decision tree
     class_names = ['Failure', 'Success']
     np.asarray(class_names)
-    dot_data = tree.export_graphviz(tree_model, out_file=None,
-                                   feature_names=list(x),
-                                   max_depth = 7,
-                                   class_names=class_names,
-                                   filled=True, rounded=True,  
-                                   special_characters=True) 
-    graph = graphviz.Source(dot_data) 
-    graph.render("Decision Tree") 
+ #   dot_data = tree.export_graphviz(tree_model, out_file=None,
+  #                                 feature_names=list(x),
+   #                                max_depth = 7,
+    #                               class_names=class_names,
+     #                              filled=True, rounded=True,  
+      #                             special_characters=True) 
+ #   graph = graphviz.Source(dot_data) 
+  #  graph.render("Decision Tree") 
     
     # Plotting feature importance
     print("Plotting the top 20 Feature importances of the fitted decision tree: " )

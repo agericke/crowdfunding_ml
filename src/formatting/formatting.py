@@ -773,28 +773,38 @@ def main():
     
     # 12 - Recheck missing values
     print("\n\n\nStep 12: Recheck missing values")
-    #There are no missing values in the data frame except for the pledge_per_backer
+    #There are some missing values in the data frame like the pledge_per_backer
     #variable. It is nan when both usd_pledged and backers are 0.
     check_missing_values_and_drop(data, drop=False)
+    print('The missing values in the region_state variable per country, are as follows:\n')
+    print('AQ  Antartica  23\nNZ  New Zealand  23\nMK  Macedonia  15\nAW  Aruba  1\nCW  Curacau   3\nGI  Gibraltar   4\nKI  Kiribati  1\nMO  Macao   1\nPN Pitcairn    1\nSX Sint Maarten  3\nVA  Vatican City  1\nXK Kosovo    7')
+    print('As we can see, most of the regions that are missing are either from a small country, an island or Antartica\n')
+    print('The missing values in the region_state variable per main_category, are as follows:\n')
+    print('art            10\ncrafts          1\ndesign          1\nfashion         1\nfilm&video     13\nfood            5\ngames          18\njournalism      3\nmusic           4\nphotography    11\npublishing      9\ntechnology      6\ntheater         1\n')
+    print("As we can see the missing values in the region_state variable have more to do with the country than with the category.\n")
+    print("For the region_state variables that don't have a state we change the empty box to None.\n")
     data.loc[data['region_state'].isnull(),'region_state'] = 'None'
+    #We print the amount of sub_categories per main_category
+    dataSub=data[data['sub_category']=='']
+    dataSub1=dataSub.groupby('main_category').sub_category.count()
+    print("The amount of missing sub_category variables per main_category is:\n")
+    print(dataSub1)
+    dataSub2=round((dataSub.groupby('main_category').sub_category.count())/data["main_category"].value_counts()*100,2)
+    print("The percentage of missing sub_category variables per main_category is:\n")
+    print(dataSub2)
+    print("For the empty strings found in sub_category we change the empty string to None.\n")
     data.loc[data['sub_category'] == '','sub_category'] = 'None'
 
     # We fill all nan with zero
     data.fillna(0,inplace=True)
     check_missing_values_and_drop(data, drop=False)
     print("In the case of pledge_per_backer, there are missing values, because some of the projects have 0 usd_pledged and 0 backers, and so the division becomes nan.")
-    print('The missing values in the region_state variable per country, are as follows:\n')
-    print('AQ  Antartica  23\nNZ  New Zealand  23\nMK  Macedonia  15\nAW  Aruba  1\nCW  Curacau   3\nGI  Gibraltar   4\nKI  Kiribati  1\nMO  Macao   1\nPN Pitcairn    1\nSX Sint Maarten  3\nVA  Vatican City  1\nXK Kosovo    7')
-    print('As we can see, most of the regions that are missing are either from a small country, an island or Antartica\n')
-    print('The missing values in the region_state variable per main_category, are as follows:\n')
-    print('art            10\ncrafts          1\ndesign          1\nfashion         1\nfilm&video     13\nfood            5\ngames          18\njournalism      3\nmusic           4\nphotography    11\npublishing      9\ntechnology      6\ntheater         1\n')
-    print('As we can see the missing values in the region_state variable have more to do with the country than with the category.')
-    
-    # 13 - Create a variable to evaluate the proportion of succesful projects depending
+
+    # 13 - Create a variable to evaluate the proportion of successful projects depending
     # on the goal money range
     print("\n\n\nStep 13: Calculate the percentage of success")
-    # TODO: Really important, redefine ranges following a criteria.
-    ranges = [250, 500, 1000, 10000, 20000, 100000, 1000000]
+    print("To create the goal_range variable we define the ranges based on Kickstarters.\n")
+    ranges = [1000, 3000, 6000, 10000, 20000, 100000, 1000000]
     range_values = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     data = obtain_success_by_goal_range(data, ranges, range_values)
     
