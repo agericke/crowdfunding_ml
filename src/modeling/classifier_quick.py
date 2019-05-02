@@ -173,7 +173,7 @@ def main():
     
     # Visualize the decision tree
     print("Visualize the fitted decision tree: " )
-    filename = os.path.join(imagesdir,'Decision_Tree.png')
+    filename = os.path.join(imagesdir,'Decision_Tree')
     class_names = ['Failure', 'Success']
     np.asarray(class_names)
     dot_data = tree.export_graphviz(tree_model, out_file=None,

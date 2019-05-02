@@ -365,8 +365,12 @@ def run_competitors_evaluation(data):
     
     #We create a variable to evaluate the proportion of succesful projects depending
     #on the competitors range
-    # TODO: Refractor this part.
-    # TODO: Again see what are optimal values to set ranges.
+    # We can not observe optimal values in the regression plot below. Commented because it takes a lot of time
+    #sns.lmplot(x="duration", y="state", data=dataTry,
+    #           logistic=True, y_jitter=.05, height=15, aspect=1);
+    # 
+    #sns.lmplot(x="competitors", y="state", data=dataTry,
+    #           logistic=True, y_jitter=.05, height=15, aspect=1); 
     data.loc[data['competitors'] < 10,'comp_range'] = 'A'
     data.loc[(data['competitors'] >= 10)&(data['competitors'] < 30),'comp_range'] = 'B'
     data.loc[(data['competitors'] >= 30)&(data['competitors'] < 60),'comp_range'] = 'C'
@@ -375,6 +379,7 @@ def run_competitors_evaluation(data):
     data.loc[(data['competitors'] >= 150)&(data['competitors'] < 200),'comp_range'] = 'F'
     data.loc[data['competitors'] >= 200,'comp_range'] = 'G'
     
+    #We also calculate the percentiles of competitors per main_category and give a value.
     data['competitors_cat_division'] =  data.groupby(['main_category'])['competitors'].transform(
                      lambda x: pd.qcut(x, [0, .25, .50, .75, 1.0], labels =['A','B','C','D']))
     return data
@@ -389,10 +394,10 @@ def refractor_country_projects(dataframe):
     Retuns:
         dataframe.
     """
-    # TODO: Taking into account 16 threshold for other bucket, or 51?
+    # TODO: Taking into account 16 threshold for other bucket, or 21?
     countryCount=dataframe.groupby('country2').country2.count()
     countryCount=countryCount.sort_values()
-    countries=countryCount[countryCount < 51]
+    countries=countryCount[countryCount < 21]
     countries=list(countries.index.values)
     dataframe.loc[dataframe['country2'].isin(countries),'country2'] = 'OTHER'
     
@@ -619,7 +624,7 @@ def plot_other_figures(data2, dataUS, filename, filename1,filename2, filename3, 
     
     stateDistCountry2 = pd.get_dummies(data2.set_index('country2').state).groupby('country2').sum()
     stateDistCountry2.columns = ['failed', 'successful']
-    fig8, (ax8) = plt.subplots(1,1, figsize=(12,8))
+    fig8, (ax8) = plt.subplots(1,1, figsize=(18,8))
     stateDistCountry2.div(stateDistCountry2.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax8, color=color2)
     ax8.set_title('Proportion of successful projects')
     ax8.set_xlabel('Country True')
@@ -773,27 +778,39 @@ def main():
     
     # 12 - Recheck missing values
     print("\n\n\nStep 12: Recheck missing values")
-    #There are no missing values in the data frame except for the pledge_per_backer
+    #There are some missing values in the data frame like the pledge_per_backer
     #variable. It is nan when both usd_pledged and backers are 0.
     check_missing_values_and_drop(data, drop=False)
-    data.loc[data['region_state'].isnull(),'region_state'] = 'None'
-    # We fill all nan with zero
-    data.fillna(0,inplace=True)
-    check_missing_values_and_drop(data, drop=False)
-    print("In the case of pledge_per_backer, there are missing values, because some of the projects have 0 usd_pledged and 0 backers, and so the division becomes nan.")
     print('The missing values in the region_state variable per country, are as follows:\n')
     print('AQ  Antartica  23\nNZ  New Zealand  23\nMK  Macedonia  15\nAW  Aruba  1\nCW  Curacau   3\nGI  Gibraltar   4\nKI  Kiribati  1\nMO  Macao   1\nPN Pitcairn    1\nSX Sint Maarten  3\nVA  Vatican City  1\nXK Kosovo    7')
     print('As we can see, most of the regions that are missing are either from a small country, an island or Antartica\n')
     print('The missing values in the region_state variable per main_category, are as follows:\n')
     print('art            10\ncrafts          1\ndesign          1\nfashion         1\nfilm&video     13\nfood            5\ngames          18\njournalism      3\nmusic           4\nphotography    11\npublishing      9\ntechnology      6\ntheater         1\n')
-    print('As we can see the missing values in the region_state variable have more to do with the country than with the category.')
-    
-    # 13 - Create a variable to evaluate the proportion of succesful projects depending
+    print("As we can see the missing values in the region_state variable have more to do with the country than with the category.\n")
+    print("For the region_state variables that don't have a state we change the empty box to None.\n")
+    data.loc[data['region_state'].isnull(),'region_state'] = 'None'
+    #We print the amount of sub_categories per main_category
+    dataSub=data[data['sub_category']=='']
+    dataSub1=dataSub.groupby('main_category').sub_category.count()
+    print("The amount of missing sub_category variables per main_category is:\n")
+    print(dataSub1)
+    dataSub2=round((dataSub.groupby('main_category').sub_category.count())/data["main_category"].value_counts()*100,2)
+    print("The percentage of missing sub_category variables per main_category is:\n")
+    print(dataSub2)
+    print("For the empty strings found in sub_category we change the empty string to None.\n")
+    data.loc[data['sub_category'] == '','sub_category'] = 'None'
+
+    # We fill all nan with zero
+    data.fillna(0,inplace=True)
+    check_missing_values_and_drop(data, drop=False)
+    print("In the case of pledge_per_backer, there are missing values, because some of the projects have 0 usd_pledged and 0 backers, and so the division becomes nan.")
+
+    # 13 - Create a variable to evaluate the proportion of successful projects depending
     # on the goal money range
     print("\n\n\nStep 13: Calculate the percentage of success")
-    # TODO: Really important, redefine ranges following a criteria.
-    ranges = [250, 500, 1000, 2000, 4000, 6000, 8000, 10000]
-    range_values = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I']
+    print("To create the goal_range variable we define the ranges based on Kickstarters.\n")
+    ranges = [1000, 3000, 6000, 10000, 20000, 100000, 1000000]
+    range_values = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     data = obtain_success_by_goal_range(data, ranges, range_values)
     
     
@@ -814,9 +831,9 @@ def main():
     data2 = data[(data['state'] == 'failed') | (data['state'] == 'successful')]
     
     
-    # 16 - Count the number of projects from each country and change the country of those that have less than 16,
+    # 16 - Count the number of projects from each country and change the country of those that have less than 21,
     # since it is a low amount to predict correctly, to OTHER.
-    print("\n\n\nStep 16: Count the number of projects from each country and change the country of those that have less than 16, since it is a low amount to predict correctly, to OTHER.")
+    print("\n\n\nStep 16: Count the number of projects from each country and change the country of those that have less than 21, since it is a low amount to predict correctly, to OTHER.")
     data2 = refractor_country_projects(data2)
     
     
@@ -834,7 +851,7 @@ def main():
     # 19 - Finding the correlation of continuous variables with the dependent variable.
     print("\n\n\nStep 19: Finding the correlation of continuous variables with the dependent variable.")
     corr=data2[['backers_count','usd_pledged','usd_goal','duration','name_length','days_until_launched','pledge_per_backer','state']].corr()
-    
+    print(corr)
     
     # 20 - Per state plots.
     print("\n\n\nStep 20: Per state plots.")
