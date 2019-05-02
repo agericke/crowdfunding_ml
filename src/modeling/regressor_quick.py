@@ -118,9 +118,12 @@ def main():
     
     # 5 - Random Forest Regressor
     print("\n\n\nStep 4: Random Forest Regressor")
-    rf_reg = RandomForestRegressor(n_estimators = 500)
+    rf_reg = RandomForestRegressor(n_estimators = 100)
     rf_reg.fit(x_train, y_train)
     y_pred = rf_reg.predict(x_test)
+    
+    ev = explained_variance_score(y_test, y_pred)
+    rmse = np.sqrt(mean_squared_error(y_test, y_pred))
     r2 = r2_score(y_test, y_pred)
     
     print("Explained variance score : %s" %ev)
@@ -132,7 +135,7 @@ def main():
     filename = os.path.join(datadir, 'decision_tree_regressor.pkl')
     store_model(reg_tree, filename)
     print("Model Decision Tree succesfully saved to %s" % filename)
-    filename = os.path.join(datadir, 'random_forest_regressor.pkl')
+    filename = os.path.join(datadir, 'random_forest_regressor_100.pkl')
     store_model(rf_reg, filename)
     print("Model Random Forest succesfully saved to %s" % filename)
     
