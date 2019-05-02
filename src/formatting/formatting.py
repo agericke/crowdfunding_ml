@@ -365,8 +365,12 @@ def run_competitors_evaluation(data):
     
     #We create a variable to evaluate the proportion of succesful projects depending
     #on the competitors range
-    # TODO: Refractor this part.
-    # TODO: Again see what are optimal values to set ranges.
+    # We can not observe optimal values in the regression plot below. Commented because it takes a lot of time
+    #sns.lmplot(x="duration", y="state", data=dataTry,
+    #           logistic=True, y_jitter=.05, height=15, aspect=1);
+    # 
+    #sns.lmplot(x="competitors", y="state", data=dataTry,
+    #           logistic=True, y_jitter=.05, height=15, aspect=1); 
     data.loc[data['competitors'] < 10,'comp_range'] = 'A'
     data.loc[(data['competitors'] >= 10)&(data['competitors'] < 30),'comp_range'] = 'B'
     data.loc[(data['competitors'] >= 30)&(data['competitors'] < 60),'comp_range'] = 'C'
@@ -375,6 +379,7 @@ def run_competitors_evaluation(data):
     data.loc[(data['competitors'] >= 150)&(data['competitors'] < 200),'comp_range'] = 'F'
     data.loc[data['competitors'] >= 200,'comp_range'] = 'G'
     
+    #We also calculate the percentiles of competitors per main_category and give a value.
     data['competitors_cat_division'] =  data.groupby(['main_category'])['competitors'].transform(
                      lambda x: pd.qcut(x, [0, .25, .50, .75, 1.0], labels =['A','B','C','D']))
     return data
@@ -389,10 +394,10 @@ def refractor_country_projects(dataframe):
     Retuns:
         dataframe.
     """
-    # TODO: Taking into account 16 threshold for other bucket, or 51?
+    # TODO: Taking into account 16 threshold for other bucket, or 21?
     countryCount=dataframe.groupby('country2').country2.count()
     countryCount=countryCount.sort_values()
-    countries=countryCount[countryCount < 51]
+    countries=countryCount[countryCount < 21]
     countries=list(countries.index.values)
     dataframe.loc[dataframe['country2'].isin(countries),'country2'] = 'OTHER'
     
@@ -619,7 +624,7 @@ def plot_other_figures(data2, dataUS, filename, filename1,filename2, filename3, 
     
     stateDistCountry2 = pd.get_dummies(data2.set_index('country2').state).groupby('country2').sum()
     stateDistCountry2.columns = ['failed', 'successful']
-    fig8, (ax8) = plt.subplots(1,1, figsize=(12,8))
+    fig8, (ax8) = plt.subplots(1,1, figsize=(18,8))
     stateDistCountry2.div(stateDistCountry2.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax8, color=color2)
     ax8.set_title('Proportion of successful projects')
     ax8.set_xlabel('Country True')
@@ -826,9 +831,9 @@ def main():
     data2 = data[(data['state'] == 'failed') | (data['state'] == 'successful')]
     
     
-    # 16 - Count the number of projects from each country and change the country of those that have less than 16,
+    # 16 - Count the number of projects from each country and change the country of those that have less than 21,
     # since it is a low amount to predict correctly, to OTHER.
-    print("\n\n\nStep 16: Count the number of projects from each country and change the country of those that have less than 16, since it is a low amount to predict correctly, to OTHER.")
+    print("\n\n\nStep 16: Count the number of projects from each country and change the country of those that have less than 21, since it is a low amount to predict correctly, to OTHER.")
     data2 = refractor_country_projects(data2)
     
     
@@ -846,7 +851,7 @@ def main():
     # 19 - Finding the correlation of continuous variables with the dependent variable.
     print("\n\n\nStep 19: Finding the correlation of continuous variables with the dependent variable.")
     corr=data2[['backers_count','usd_pledged','usd_goal','duration','name_length','days_until_launched','pledge_per_backer','state']].corr()
-    
+    print(corr)
     
     # 20 - Per state plots.
     print("\n\n\nStep 20: Per state plots.")
