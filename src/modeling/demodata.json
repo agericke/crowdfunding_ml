@@ -1,0 +1,20 @@
+{
+  "currency": "USD",
+  "usd_goal": 10000000,
+  "duration": 30,
+  "days_until_launched" : 35,
+  "year_launched"  : 2016,
+  "month_launched" : "OCT",
+  "weekday_launched" : "MON",
+  "name_length" : 5,
+  "description_length" : 16,
+  "main_category" : "comics",
+  "sub_category" : "events",
+  "country2" : "US",
+  "type" : "County",
+  "goal_range" : "G",
+  "goal_cat_division" : "D",
+  "competitors" : 40,
+  "comp_range" : "C",
+  "competitors_cat_division" : "B"
+}

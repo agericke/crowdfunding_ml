@@ -18,6 +18,8 @@ import graphviz
 from sklearn import tree
 from sklearn.tree import export_graphviz
 import pickle
+import json
+
 
 def initial_setup():
     """
