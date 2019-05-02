@@ -83,6 +83,25 @@ def prepare_data_for_ML(df):
     
     return df, x, y
 
+def plot_feature_importance(tree_model, x_train, filename):
+    """
+    Plot top 20 features that has the largest importance in the model.
+    Params:
+        tree_model: The fitted decision tree model.
+        x_train: the independant variables X.
+        filename: Path to the file where the image will be saved.
+    Returns:
+        Save image to filename.
+    """
+    fig, ax = plt.subplots()
+    feat_importances = pd.Series(tree_model.feature_importances_, index=x_train.columns)
+    feat_importances.nlargest(20).plot(kind='barh', ax=ax)
+    ax.set_title('Top 20 Feature Importance')
+    ax.set_xlabel('Feature Importance')
+    fig.subplots_adjust(left=0.36, right = 0.97)
+    plt.show()
+    fig.savefig(filename, dpi=fig.dpi)
+
 def main():
     print("Step 0: Initial directories and colnames set up")
     dirname, datadir, imagesdir, initial_colnames = initial_setup()
@@ -153,22 +172,25 @@ def main():
     print("Recall score : %s" %rec )
     
     # Visualize the decision tree
+    print("Visualize the fitted decision tree: " )
+    filename = os.path.join(imagesdir,'Decision_Tree.png')
     class_names = ['Failure', 'Success']
     np.asarray(class_names)
     dot_data = tree.export_graphviz(tree_model, out_file=None,
                                    feature_names=list(x),
-                                   max_depth = 7,
+                                   max_depth = 6,
                                    class_names=class_names,
                                    filled=True, rounded=True,  
                                    special_characters=True) 
     graph = graphviz.Source(dot_data) 
-    graph.render("Decision Tree") 
+    graph.render(filename, format='png')
+    print("Decision tree plot succesfully saved to file %s" % filename)
     
     # Plotting feature importance
     print("Plotting the top 20 Feature importances of the fitted decision tree: " )
-    feat_importances = pd.Series(tree_model.feature_importances_, index=x_train.columns)
-    feat_importances.nlargest(20).plot(kind='barh')
-    plt.show()
+    filename = os.path.join(imagesdir,'tree_feature_importance.png')
+    plot_feature_importance(tree_model, x_train, filename)
+    print("Feature importance plot succesfully saved to file %s" % filename)
     
     # 6 - Random Forest Classifier
     print("\n\n\nStep 5: Random Forest Classifier.")
@@ -186,9 +208,9 @@ def main():
     print("Recall score : %s" %rec )
     
     print("Plotting top 20 Feature importances of the fitted Random Forest: " )
-    feat_importances = pd.Series(rf_default.feature_importances_, index=x_train.columns)
-    feat_importances.nlargest(20).plot(kind='barh')
-    plt.show()
+    filename = os.path.join(imagesdir,'rf_feature_importance.png')
+    plot_feature_importance(rf_default, x_train, filename)
+    print("Feature importance plot succesfully saved to file %s" % filename)
     
     # 7 - Save different models obtained.
     print("\n\n\nStep 6: Save different models obtained.")
