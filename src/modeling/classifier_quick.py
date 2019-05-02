@@ -14,6 +14,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import GridSearchCV
+from sklearn.feature_selection import RFE
 import graphviz
 from sklearn import tree
 from sklearn.tree import export_graphviz
@@ -143,9 +144,24 @@ def main():
     
     # 4 - Logistic Regression Classifier
     print("\n\n\nStep 3: Logistic Regression Classifier.")
-    log_reg = LogisticRegression(random_state=0)
+    log_reg = LogisticRegression(random_state=0, solver = 'liblinear')
     log_reg.fit(x_train, y_train)
     y_pred = log_reg.predict(x_test)
+    
+    cm = confusion_matrix(y_test, y_pred, labels = [1, 0])
+    print("Confusion matrix : %s" %cm )
+    acc = accuracy_score(y_test, y_pred)
+    print("Accuracy score : %s" %acc )
+    prec = precision_score(y_test, y_pred)
+    print("Precision score : %s" %prec )
+    rec = recall_score(y_test, y_pred)
+    print("Recall score : %s" %rec )
+    
+    # 4B - Logistic Regression with Feature selection
+    print("\n\n\nStep 3B: Logistic Regression Classifier with Feature selection.")
+    selector = RFE(log_reg) # use half of the features
+    selector.fit(x_train, y_train)
+    y_pred = selector.predict(x_test)
     
     cm = confusion_matrix(y_test, y_pred, labels = [1, 0])
     print("Confusion matrix : %s" %cm )
@@ -219,7 +235,10 @@ def main():
     print("Model Naive Bayes succesfully saved to %s" % filename)
     filename = os.path.join(datadir, 'logistic_regression_classifier.pkl')
     store_model(log_reg, filename)
-    print("Model Logistc Regression succesfully saved to %s" % filename)
+    print("Model Logistic Regression succesfully saved to %s" % filename)
+    filename = os.path.join(datadir, 'log_reg_rfe_classifier.pkl')
+    store_model(selector, filename)
+    print("Model Logistic Regression with Feature selection succesfully saved to %s" % filename)
     filename = os.path.join(datadir, 'decision_tree_classifier.pkl')
     store_model(tree_model, filename)
     print("Model Decision Tree succesfully saved to %s" % filename)
