@@ -18,6 +18,7 @@ import graphviz
 from sklearn import tree
 from sklearn.tree import export_graphviz
 import pickle
+import configparser
 
 def initial_setup():
     """
@@ -33,9 +34,8 @@ def initial_setup():
     dirname = os.path.dirname(os.path.abspath('__file__'))
     datadir =  os.path.join(os.path.abspath(os.path.join(os.path.join(dirname, os.pardir), os.pardir)), 'data')
     imagesdir =  os.path.join(os.path.abspath(os.path.join(dirname, os.pardir)), 'images')
-    initial_colnames = sorted(['backers_count', 'blurb', 'category', 'country', 'created_at', 'state_changed_at', 'currency', 'deadline', 'goal', 'id', 'launched_at', 'location', 'name', 'pledged', 'state', 'static_usd_rate', 'usd_pledged'])
-    return dirname, datadir, imagesdir, initial_colnames
-
+    return dirname, datadir, imagesdir
+    
 def read_from_disk(filename):
     """
     Read a dataframe from a filename in disk.
@@ -56,7 +56,21 @@ def store_model(model, filename):
         Nothing.
     """
     pickle.dump(model, open(filename, 'wb'))
-
+    
+    
+def read_data_for_demo(x, demo_file, colnames, floatcols, intcols, strcols, catcols):
+    config = configparser.ConfigParser()
+    config.read(demo_file)
+    demo_values = []
+    for col in colnames:    
+        value = config.get('demodata', col)
+        demo_values.append(value)
+        if col == 'usd_goal':
+            value = float(value)
+        elif col == '
+        print("Column %s has values %s" %(col, str(value)))
+        print("Type is : %s" % type(value))
+    
 def prepare_data_for_ML(df):
     """
     Prepare data for ML analysis and algorithms
