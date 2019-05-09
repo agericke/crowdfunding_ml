@@ -23,6 +23,8 @@ from sklearn.model_selection import train_test_split
 #%matplotlib inline
 
 
+plt.rcParams.update({'font.size': 22})
+
 def initial_setup():
     """
     Create Initial setup of directories variables, and dataframe vars to use.
@@ -137,7 +139,6 @@ def create_new_date_cols(data, col_from, col_format, new_column, axis=1):
     return data
 
 
-
 def convert_to_date(data, col, axis=1):
     """
     Convert an existing column to timestamp date format.
@@ -153,7 +154,7 @@ def convert_to_date(data, col, axis=1):
     return data
 
 
-def plot_proyects_per_year(data, filename):
+def plot_proyects_per_year(data, filename1, filename2):
     """
     Plot amount of proyects grouped by year and proyect state per year.
     Params:
@@ -162,16 +163,24 @@ def plot_proyects_per_year(data, filename):
     Returns:
         Nothing. Saves image to filename.
     """    
-    fig, (ax1,ax2) = plt.subplots(1, 2, figsize=(25,12))
+    #fig, (ax1,ax2) = plt.subplots(1, 2, figsize=(25,12))
+    fig = plt.figure( figsize=(13,12))
+    ax1 = plt.gca()
     data.groupby('year_launched').year_launched.count().plot(kind='bar', ax=ax1, color='green')
+    plt.setp( ax1.xaxis.get_majorticklabels(), rotation=45 )
     ax1.set_title('Number of Projects per Year')
     ax1.set_xlabel('Year')
+    fig.savefig(filename1, dpi=fig.dpi)
+    
+    fig = plt.figure( figsize=(13,12))
+    ax2 = plt.gca()
     stateDistYear1 = pd.get_dummies(data.set_index('year_launched').state).groupby('year_launched').sum()
     #stateDistYear1.columns = ['failed', 'successful']
     stateDistYear1.plot(kind='bar', ax=ax2)
+    plt.setp( ax2.xaxis.get_majorticklabels(), rotation=45 )
     ax2.set_title('State distribution of projects per year')
     ax2.set_xlabel('Year')
-    fig.savefig(filename, dpi=fig.dpi)
+    fig.savefig(filename2, dpi=fig.dpi)
 
 
 def remove_cols(dataframe, cols_to_remove):
@@ -335,8 +344,6 @@ def obtain_success_by_goal_range(data, ranges, range_values):
             data.loc[data['usd_goal'] >= ranges[i-1],'goal_range'] = range_values[i]
         else:
             data.loc[(data['usd_goal'] >= ranges[i-1])&(data['usd_goal'] < ranges[i]),'goal_range'] = range_values[i]
-    # TODO: REALLY IMPORTANT: DEFINE A WAY TO OBTAIN OPTIMAL RANGES SEPARATORS (JUST AS DID IN CLASS ONCE)
-    # TODO: PROFESSOR DID IT BY SCATTER PLOTTING VARIABLE AGAINST VAR OBJECTIVE (SUCCESS RATE IN OUR CASE) IF I REMEMBER WELL.
     data['goal_cat_division'] =  data.groupby(['main_category'])['usd_goal'].transform(
                      lambda x: pd.qcut(x, [0, .25, .50, .75, 1.0], labels =['A','B','C','D']))
     
@@ -440,48 +447,58 @@ def plot_figures_about_states(data2, filename):
         Nothing. Saves to disk figure
     """
     fig, ((ax1, ax2, ax3), (ax4, ax5, ax6), (ax7, ax8, ax9)) = plt.subplots(3, 3, figsize=(15,15))
-    color=['orange', 'blue', 'pink', 'red', 'green', 'yellow', 'cyan']
+    color=['red', 'green']
     
     print("\nPlots regarding states")
-    data2.groupby('state').state.count().plot(kind='bar', ax=ax1, color=color)
-    ax1.set_title('Number of Projects per State')
+    data2.groupby('state').state.count().sort_values().plot(kind='bar', ax=ax1, color=color)
+    plt.setp(ax1.get_xticklabels(), rotation=0)
+    ax1.set_title('Number of Projects \nper State', fontsize=18)
     ax1.set_xlabel('')
     
     data2.groupby('state').usd_goal.median().plot(kind='bar', ax=ax2, color=color)
-    ax2.set_title('Median project goal ($)')
+    plt.setp(ax2.get_xticklabels(), rotation=0)
+    ax2.set_title('Median project goal ($)', fontsize=18)
     ax2.set_xlabel('')
     
     data2.groupby('state').usd_pledged.median().plot(kind='bar', ax=ax3, color=color)
-    ax3.set_title('Median project pledged ($)')
+    plt.setp(ax3.get_xticklabels(), rotation=0)
+    ax3.set_title('Median project pledged ($)', fontsize=18)
     ax3.set_xlabel('')
     
     data2.groupby('state').backers_count.median().plot(kind='bar', ax=ax4, color=color)
-    ax4.set_title('Median project backers')
+    plt.setp(ax4.get_xticklabels(), rotation=0)
+    ax4.set_title('Median project backers', fontsize=18)
     ax4.set_xlabel('')
     
     data2.groupby('state').duration.mean().plot(kind='bar', ax=ax5, color=color)
-    ax5.set_title('Mean project duration from launch to deadline')
+    plt.setp(ax5.get_xticklabels(), rotation=0)
+    ax5.set_title('Mean project duration \nfrom launch to deadline', fontsize=18)
     ax5.set_xlabel('')
     
     data2.groupby('state').name_length.mean().plot(kind='bar', ax=ax6, color=color)
-    ax6.set_title('Mean name length of project')
+    plt.setp(ax6.get_xticklabels(), rotation=0)
+    ax6.set_title('Mean name length of project', fontsize=18)
     ax6.set_xlabel('')
     
     data2.groupby('state').competitors.mean().plot(kind='bar', ax=ax7, color=color)
-    ax7.set_title('Median number of competitors')
+    plt.setp(ax7.get_xticklabels(), rotation=0)
+    ax7.set_title('Median number \nof competitors', fontsize=18)
     ax7.set_xlabel('')
     
     data2.groupby('state').description_length.mean().plot(kind='bar', ax=ax8, color=color)
-    ax8.set_title('Mean description length of project')
+    plt.setp(ax8.get_xticklabels(), rotation=0)
+    ax8.set_title('Mean description \nlength of project', fontsize=18)
     ax8.set_xlabel('')
     
     data2.groupby('state').days_until_launched.mean().plot(kind='bar', ax=ax9, color=color)
-    ax9.set_title('Mean project duration until launched')
+    plt.setp(ax9.get_xticklabels(), rotation=0)
+    ax9.set_title('Mean project duration \nuntil launched', fontsize=18)
     ax9.set_xlabel('')
     
     fig.subplots_adjust(hspace=0.6)
+    fig.tight_layout()
     # TODO: Comment if running from console.
-    plt.show()
+    #plt.show()
     fig.savefig(filename, dpi=fig.dpi)
     
     
@@ -494,47 +511,67 @@ def plot_figures_about_main_category(data2, stateDistCat, filename):
     Returns:
         Nothing. Saves to disk figure
     """ 
-    fig, ((ax1, ax2), (ax3, ax4), (ax5, ax6), (ax7,ax8)) = plt.subplots(4, 2, figsize=(20,20))
-    color2 = cm.CMRmap(np.linspace(0.1,0.9,data2.main_category.nunique()))
+    fig, ((ax1, ax2), (ax3, ax4), (ax5, ax6), (ax7,ax8)) = plt.subplots(4, 2, figsize=(35,35))
+    #color2 = cm.CMRmap(np.linspace(0.1,0.9,data2.main_category.nunique()))
+    color2 = 'blue'
     
-    data2.groupby('main_category').main_category.count().plot(kind='bar', ax=ax1, color=color2)
-    ax1.set_title('Number of projects')
-    ax1.set_xlabel('')
+    data2.groupby('main_category').main_category.count().sort_values(ascending=False).plot(kind='barh', ax=ax1, color=color2)
+    plt.setp(ax1.get_xticklabels(), fontsize=28)
+    plt.setp(ax1.get_yticklabels(), fontsize=30)
+    ax1.set_title('Number of \nprojects', fontsize=32)
+    ax1.set_ylabel('')
     
-    data2.groupby('main_category').usd_goal.median().plot(kind='bar', ax=ax2, color=color2)
-    ax2.set_title('Median project goal ($)')
-    ax2.set_xlabel('')
+    data2.groupby('main_category').usd_goal.median().sort_values(ascending=False).plot(kind='barh', ax=ax2, color=color2)
+    plt.setp(ax2.get_xticklabels(), rotation=0, fontsize=28)
+    plt.setp(ax2.get_yticklabels(), fontsize=30)
+    ax2.set_title('Median project goal ($)', fontsize=32)
+    ax2.set_ylabel('')
     
-    data2.groupby('main_category').usd_pledged.median().plot(kind='bar', ax=ax3, color=color2)
-    ax3.set_title('Median pledged per project ($)')
-    ax3.set_xlabel('')
+    data2.groupby('main_category').usd_pledged.median().sort_values(ascending=False).plot(kind='barh', ax=ax3, color=color2)
+    plt.setp(ax3.get_xticklabels(), rotation=0, fontsize=28)
+    plt.setp(ax3.get_yticklabels(), fontsize=30)
+    ax3.set_title('Median pledged \nper project ($)', fontsize=32)
+    ax3.set_ylabel('')
     
-    stateDistCat.div(stateDistCat.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax4, color=color2)
-    ax4.set_title('Proportion of successful projects')
-    ax4.set_xlabel('')
+    stateDistCat.div(stateDistCat.sum(axis=1), axis=0).successful.sort_values(ascending=False).plot(kind='barh', ax=ax4, color=color2)
+    plt.setp(ax4.get_xticklabels(), rotation=0, fontsize=28)
+    plt.setp(ax4.get_yticklabels(), fontsize=30)
+    ax4.set_title('Proportion of \nsuccessful projects', fontsize=32)
+    vals = ax4.get_xticks()
+    ax4.set_xticklabels(['{:,.0%}'.format(x) for x in vals])
+    ax4.set_ylabel('')
     
-    data2.groupby('main_category').backers_count.median().plot(kind='bar', ax=ax5, color=color2)
-    ax5.set_title('Median backers per project')
-    ax5.set_xlabel('')
+    data2.groupby('main_category').backers_count.median().sort_values(ascending=False).plot(kind='barh', ax=ax5, color=color2)
+    plt.setp(ax5.get_xticklabels(), rotation=0, fontsize=28)
+    plt.setp(ax5.get_yticklabels(), fontsize=30)
+    ax5.set_title('Median backers \nper project', fontsize=32)
+    ax5.set_ylabel('')
     
-    data2.groupby('main_category').pledge_per_backer.median().plot(kind='bar', ax=ax6, color=color2)
-    ax6.set_title('Median pledged per backer ($)')
-    ax6.set_xlabel('')
+    data2.groupby('main_category').pledge_per_backer.median().sort_values(ascending=False).plot(kind='barh', ax=ax6, color=color2)
+    plt.setp(ax6.get_xticklabels(), rotation=0, fontsize=28)
+    plt.setp(ax6.get_yticklabels(), fontsize=30)
+    ax6.set_title('Median pledged \nper backer ($)', fontsize=32)
+    ax6.set_ylabel('')
     
-    data2.groupby('main_category').competitors.median().plot(kind='bar', ax=ax7, color=color2)
-    ax7.set_title('Median number of competitors')
-    ax7.set_xlabel('')
+    data2.groupby('main_category').competitors.median().sort_values(ascending=False).plot(kind='barh', ax=ax7, color=color2)
+    plt.setp(ax7.get_xticklabels(), rotation=0, fontsize=28)
+    plt.setp(ax7.get_yticklabels(), fontsize=30)
+    ax7.set_title('Median number \nof competitors', fontsize=32)
+    ax7.set_ylabel('')
     
     stateDistComp = pd.get_dummies(data2.set_index('comp_range').state).groupby('comp_range').sum()
     stateDistComp.columns = ['failed', 'successful']
     
-    stateDistComp.div(stateDistComp.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax8, color=color2)
-    ax8.set_title('Proportion of successful projects')
-    ax8.set_xlabel('Competitors Range')
+    stateDistComp.div(stateDistComp.sum(axis=1), axis=0).successful.sort_values(ascending=False).plot(kind='barh', ax=ax8, color=color2)
+    plt.setp(ax8.get_xticklabels(), rotation=0, fontsize=28)
+    plt.setp(ax8.get_yticklabels(), fontsize=30)
+    ax8.set_title('Proportion of \nsuccessful projects', fontsize=32)
+    ax8.set_ylabel('Competitors Range', fontsize=28)
     
     fig.subplots_adjust(hspace=0.6)
+    fig.tight_layout()
     # TODO: Comment if running from console.
-    plt.show()
+    #plt.show()
     fig.savefig(filename, dpi=fig.dpi)
     
 
@@ -548,15 +585,21 @@ def plot_other_figures(data2, dataUS, filename, filename1,filename2, filename3, 
     Returns:
         Nothing. Saves to disk figure
     """ 
-    color2 = cm.CMRmap(np.linspace(0.1,0.9,data2.main_category.nunique()))
+    #color2 = cm.CMRmap(np.linspace(0.1,0.9,data2.main_category.nunique()))
+    color2 = 'blue'
     
     stateDistCountry = pd.get_dummies(data2.set_index('country').state).groupby('country').sum()
     stateDistCountry.columns = ['failed', 'successful']
-    fig1, (ax1) = plt.subplots(1,1, figsize=(12,8))
-    stateDistCountry.div(stateDistCountry.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax1, color=color2)
-    ax1.set_title('Proportion of successful projects')
-    ax1.set_xlabel('Country')
-    plt.show()
+    fig1, (ax1) = plt.subplots(1,1, figsize=(15,8))
+    stateDistCountry.div(stateDistCountry.sum(axis=1), axis=0).successful.sort_values(ascending=False).plot(kind='bar', ax=ax1, color=color2)
+    plt.setp(ax1.get_xticklabels(), rotation=70, fontsize=28, fontweight='bold')
+    #plt.setp(ax1.get_yticklabels(), fontsize=30)
+    ax1.set_title('Proportion of successful projects', fontsize=28)
+    ax1.set_xlabel('Country', fontsize=30)
+    vals = ax1.get_yticks()
+    ax1.set_yticklabels(['{:,.0%}'.format(x) for x in vals])
+    fig1.tight_layout()
+    #plt.show()
     # TODO: Comment if running from console.
     fig1.savefig(filename, dpi=fig1.dpi)
     
@@ -564,39 +607,53 @@ def plot_other_figures(data2, dataUS, filename, filename1,filename2, filename3, 
     stateDistMonth.columns = ['failed', 'successful']
     stateDistMonth.index = stateDistMonth.index.str.strip()
     stateDistMonth = stateDistMonth.reindex(['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'])
-    fig2, (ax2) = plt.subplots(1,1, figsize=(12,8))
+    fig2, (ax2) = plt.subplots(1,1, figsize=(15,8))
     stateDistMonth.div(stateDistMonth.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax2, color=color2)
+    plt.setp(ax2.get_xticklabels(), rotation=70, fontsize=28, fontweight='bold')
+    vals = ax2.get_yticks()
+    ax2.set_yticklabels(['{:,.0%}'.format(x) for x in vals])
     ax2.set_title('Proportion of successful projects')
     ax2.set_xlabel('Month')
-    plt.show()
+    fig2.tight_layout()
+    #plt.show()
     # TODO: Comment if running from console.
     fig2.savefig(filename1, dpi=fig2.dpi)
     
     stateDistYear = pd.get_dummies(data2.set_index('year_launched').state).groupby('year_launched').sum()
     stateDistYear.columns = ['failed', 'successful']
-    fig3, (ax3) = plt.subplots(1,1, figsize=(12,8))
-    stateDistYear.div(stateDistYear.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax3, color='green')
+    fig3, (ax3) = plt.subplots(1,1, figsize=(15,8))
+    stateDistYear.div(stateDistYear.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax3, color=color2)
+    plt.setp(ax3.get_xticklabels(), rotation=0, fontsize=23, fontweight='bold')
+    vals = ax3.get_yticks()
+    ax3.set_yticklabels(['{:,.0%}'.format(x) for x in vals])
     ax3.set_title('Proportion of successful projects')
     ax3.set_xlabel('Year')
-    plt.show()
+    fig3.tight_layout()
+    #plt.show()
     # TODO: Comment if running from console.
     fig3.savefig(filename2, dpi=fig3.dpi)
     
-    fig4, (ax4) = plt.subplots(1,1, figsize=(12,8))
-    stateDistYear.plot(kind='bar', ax=ax4)
+    fig4, (ax4) = plt.subplots(1,1, figsize=(15,8))
+    stateDistYear.plot(kind='bar', ax=ax4, color=['red', 'green'])
+    plt.setp(ax4.get_xticklabels(), rotation=30, fontsize=23, fontweight='bold')
     ax4.set_title('Number of failed and successful projects')
     ax4.set_xlabel('Year')
-    plt.show()
+    fig4.tight_layout()
+    #plt.show()
     # TODO: Comment if running from console.
     fig4.savefig(filename3, dpi=fig4.dpi)
     
     stateDistCurr = pd.get_dummies(data2.set_index('currency').state).groupby('currency').sum()
     stateDistCurr.columns = ['failed', 'successful']
-    fig5, (ax5) = plt.subplots(1,1, figsize=(12,8))
-    stateDistCurr.div(stateDistCurr.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax5, color=color2)
+    fig5, (ax5) = plt.subplots(1,1, figsize=(15,8))
+    stateDistCurr.div(stateDistCurr.sum(axis=1), axis=0).successful.sort_values(ascending=False).plot(kind='bar', ax=ax5, color=color2)
+    plt.setp(ax5.get_xticklabels(), rotation=30, fontsize=20, fontweight='bold')
+    vals = ax5.get_yticks()
+    ax5.set_yticklabels(['{:,.0%}'.format(x) for x in vals])
     ax5.set_title('Proportion of successful projects')
     ax5.set_xlabel('Currency')
-    plt.show()
+    fig5.tight_layout()
+    #plt.show()
     # TODO: Comment if running from console.
     fig5.savefig(filename4, dpi=fig5.dpi)
     
@@ -605,55 +662,78 @@ def plot_other_figures(data2, dataUS, filename, filename1,filename2, filename3, 
     stateDistWeekday.index = stateDistWeekday.index.str.strip()
     stateDistWeekday = stateDistWeekday.reindex(['Mon','Tue','Wed','Thu','Fri','Sat','Sun'])
     fig6, (ax6) = plt.subplots(1,1, figsize=(12,8))
-    stateDistWeekday.div(stateDistWeekday.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax6, color=color2)
+    stateDistWeekday.div(stateDistWeekday.sum(axis=1), axis=0).successful.sort_values(ascending=False).plot(kind='bar', ax=ax6, color=color2)
+    plt.setp(ax6.get_xticklabels(), rotation=30, fontsize=20, fontweight='bold')
+    vals = ax6.get_yticks()
+    ax6.set_yticklabels(['{:,.0%}'.format(x) for x in vals])
     ax6.set_title('Proportion of successful projects')
     ax6.set_xlabel('Weekday')
-    plt.show()
+    fig6.tight_layout()
+    #plt.show()
     # TODO: Comment if running from console.
     fig6.savefig(filename5, dpi=fig6.dpi)
     
     stateDistUS = pd.get_dummies(dataUS.set_index('region_state').state).groupby('region_state').sum()
     stateDistUS.columns = ['failed', 'successful']
-    fig7, (ax7) = plt.subplots(1,1, figsize=(12,8))
-    stateDistUS.div(stateDistUS.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax7, color=color2)
-    ax7.set_title('Proportion of successful projects in US')
-    ax7.set_xlabel('US State')
-    plt.show()
+    fig7 = plt.figure(figsize=(12,18))
+    ax7 = plt.gca()
+    stateDistUS.div(stateDistUS.sum(axis=1), axis=0).successful.sort_values(ascending=False).plot(kind='barh', ax=ax7, color=color2)
+    plt.setp(ax7.get_yticklabels(), rotation=0, fontsize=18)
+    vals = ax7.get_xticks()
+    ax7.set_xticklabels(['{:,.0%}'.format(x) for x in vals])
+    ax7.tick_params(labelbottom=True, labeltop=True, labelleft=True, labelright=False,
+                     bottom=True, top=True, left=True, right=False)
+    ax7.set_title('Proportion of successful projects in US', y = 1.03)
+    ax7.set_ylabel('US State')
+    fig7.tight_layout()
+    #plt.show()
     # TODO: Comment if running from console.
     fig7.savefig(filename6, dpi=fig7.dpi)
     
     stateDistCountry2 = pd.get_dummies(data2.set_index('country2').state).groupby('country2').sum()
     stateDistCountry2.columns = ['failed', 'successful']
-    fig8, (ax8) = plt.subplots(1,1, figsize=(18,8))
-    stateDistCountry2.div(stateDistCountry2.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax8, color=color2)
+    fig8, (ax8) = plt.subplots(1,1, figsize=(30,8))
+    stateDistCountry2.div(stateDistCountry2.sum(axis=1), axis=0).successful.sort_values(ascending=False).plot(kind='bar', ax=ax8, color=color2)
+    vals = ax8.get_yticks()
+    ax8.set_yticklabels(['{:,.0%}'.format(x) for x in vals])
+    plt.setp(ax8.get_xticklabels(), rotation=70, fontsize=20, fontweight='bold')
+    ax8.tick_params(labelbottom=True, labeltop=False, labelleft=True, labelright=True,
+                     bottom=True, top=False, left=True, right=True)
     ax8.set_title('Proportion of successful projects')
-    ax8.set_xlabel('Country True')
-    plt.show()
+    ax8.set_xlabel('Country')
+    fig8.tight_layout()
+    #plt.show()
     # TODO: Comment if running from console.
     fig8.savefig(filename7, dpi=fig8.dpi)
     
     stateDistGoal = pd.get_dummies(data2.set_index('goal_range').state).groupby('goal_range').sum()
     stateDistGoal.columns = ['failed', 'successful']
     fig9, (ax9) = plt.subplots(1,1, figsize=(12,8))
-    stateDistGoal.div(stateDistGoal.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax9, color=color2)
+    stateDistGoal.div(stateDistGoal.sum(axis=1), axis=0).successful.sort_values(ascending=False).plot(kind='bar', ax=ax9, color=color2)
+    vals = ax9.get_yticks()
+    ax9.set_yticklabels(['{:,.0%}'.format(x) for x in vals])
+    plt.setp(ax9.get_xticklabels(), rotation=0, fontsize=20, fontweight='bold')
     ax9.set_title('Proportion of successful projects')
     ax9.set_xlabel('Goal Range')
-    plt.show()
+    fig9.tight_layout()
+    #plt.show()
     # TODO: Comment if running from console.
     fig9.savefig(filename8, dpi=fig9.dpi)
     
     stateDistType = pd.get_dummies(data2.set_index('type').state).groupby('type').sum()
     stateDistType.columns = ['failed', 'successful']
     fig10, (ax10) = plt.subplots(1,1, figsize=(12,8))
-    stateDistType.div(stateDistType.sum(axis=1), axis=0).successful.plot(kind='bar', ax=ax10, color=color2)
+    stateDistType.div(stateDistType.sum(axis=1), axis=0).successful.sort_values(ascending=False).plot(kind='barh', ax=ax10, color=color2)
+    plt.setp(ax10.get_yticklabels(), rotation=0, fontsize=20, fontweight='bold')
+    vals = ax10.get_xticks()
+    ax10.set_xticklabels(['{:,.0%}'.format(x) for x in vals])
     ax10.set_title('Proportion of successful projects')
-    ax10.set_xlabel('Type of location')
-    plt.show()
+    ax10.set_ylabel('Type of location')
+    fig10.tight_layout()
+    #plt.show()
     # TODO: Comment if running from console.
     fig10.savefig(filename9, dpi=fig10.dpi)
-    
-    
-    
+
     
 def prepare_data_for_ML(dataframe):
     """
@@ -732,9 +812,10 @@ def main():
     
     # 5 - Plots per year.
     print("\n\n\nStep 5: Plots per year.")
-    filename = os.path.join(imagesdir,'proyects_per_year.png')
-    plot_proyects_per_year(data, filename)
-    print("Plots per year succesfully saved to file %s" % filename)
+    filename1 = os.path.join(imagesdir,'number_proyects_per_year.png')
+    filename2 = os.path.join(imagesdir,'number_proyects_per_year_per_state.png')
+    plot_proyects_per_year(data, filename1, filename2)
+    print("Plots per year succesfully saved to file %s and file %s" % (filename1, filename2))
     
     
     # 6 - Find length of name and blurb, and drop vars.
@@ -760,9 +841,6 @@ def main():
     # 9 - Create location vars.
     print("\n\n\nStep 9: Create country, state and type columns")
     data = create_location_vars(data)
-    # TODO: Need to run missing values identification in the new vars, and plot some graphs for the new vars.
-    # TODO: for running the missing values identification is not sufficient to run only .isna() function. Also
-    # TODO: necessary to identify empty strings, or other values that may be introduced as missing values just as studied in class.
     
     
     # 10 - Calculate the pledge per backer for each project.
@@ -827,7 +905,6 @@ def main():
     print(percentage_per_state)
     #The higher percentage belong to succesful and failed state, so we can get rid of the rest of the projects that have another category
     #We only keep those projects that have values either successful or failed
-    # TODO: Re-check conclusions. Probably professor will ask the reason for droping the vars.
     data2 = data[(data['state'] == 'failed') | (data['state'] == 'successful')]
     
     
@@ -852,6 +929,15 @@ def main():
     print("\n\n\nStep 19: Finding the correlation of continuous variables with the dependent variable.")
     corr=data2[['backers_count','usd_pledged','usd_goal','duration','name_length','days_until_launched','pledge_per_backer','state']].corr()
     print(corr)
+    # Print correlation as a figure
+    fig = plt.figure()
+    mask = np.zeros_like(corr)
+    mask[np.triu_indices_from(mask)] = True
+    with sns.axes_style("white"):
+        sns.heatmap(corr, mask=mask, vmax=.3, square=True)
+    filename = os.path.join(imagesdir,'correlations.png')
+    print(filename)
+    fig.savefig(filename, dpi = fig.dpi)
     
     # 20 - Per state plots.
     print("\n\n\nStep 20: Per state plots.")

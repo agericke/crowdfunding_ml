@@ -93,7 +93,7 @@ def prepare_data_for_ML(df):
     y = df[target]
     
 #     One-hot encode the categorical data
-    #x = pd.get_dummies(x)
+    x = pd.get_dummies(x)
     
     return df, x, y
 
