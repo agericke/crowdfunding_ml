@@ -9,6 +9,7 @@ from datetime import date
 import time
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import *
+from sklearn.preprocessing import StandardScaler
 from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
@@ -67,7 +68,6 @@ def read_data_for_demo(x, demo_file, colnames, floatcols, intcols, strcols, catc
         demo_values.append(value)
         if col == 'usd_goal':
             value = float(value)
-        elif col == '
         print("Column %s has values %s" %(col, str(value)))
         print("Type is : %s" % type(value))
     
@@ -86,14 +86,17 @@ def prepare_data_for_ML(df):
 #     Create the target variable, in this case 'state' of a project
     target = 'state'
     
-#     Drop unnecessary variables or future variables
-    to_drop = ['id', 'backers_count', 'usd_pledged', 'pledge_per_backer', 'success_rate']
+    to_drop = ['id', 'backers_count', 'usd_pledged', 'pledge_per_backer', 'success_rate', 'goal_cat_division', 'competitors_cat_division']
     df = df.drop(to_drop, axis=1)
-    x = df.drop(target, axis=1)
+    X_unscaled = df.drop(target, axis=1)
     y = df[target]
     
 #     One-hot encode the categorical data
-    x = pd.get_dummies(x)
+    X_unscaled= pd.get_dummies(X_unscaled)
+    
+    # Transforming the data
+    scaler = StandardScaler()
+    x = pd.DataFrame(scaler.fit_transform(X_unscaled), columns=list(X_unscaled.columns))
     
     return df, x, y
 
