@@ -517,25 +517,25 @@ def plot_figures_about_main_category(data2, stateDistCat, filename):
     
     data2.groupby('main_category').main_category.count().sort_values(ascending=False).plot(kind='barh', ax=ax1, color=color2)
     plt.setp(ax1.get_xticklabels(), fontsize=28)
-    plt.setp(ax1.get_yticklabels(), fontsize=30)
+    plt.setp(ax1.get_yticklabels(), fontsize=30, fontweight='bold')
     ax1.set_title('Number of \nprojects', fontsize=32)
     ax1.set_ylabel('')
     
     data2.groupby('main_category').usd_goal.median().sort_values(ascending=False).plot(kind='barh', ax=ax2, color=color2)
     plt.setp(ax2.get_xticklabels(), rotation=0, fontsize=28)
-    plt.setp(ax2.get_yticklabels(), fontsize=30)
+    plt.setp(ax2.get_yticklabels(), fontsize=30, fontweight='bold')
     ax2.set_title('Median project goal ($)', fontsize=32)
     ax2.set_ylabel('')
     
     data2.groupby('main_category').usd_pledged.median().sort_values(ascending=False).plot(kind='barh', ax=ax3, color=color2)
     plt.setp(ax3.get_xticklabels(), rotation=0, fontsize=28)
-    plt.setp(ax3.get_yticklabels(), fontsize=30)
+    plt.setp(ax3.get_yticklabels(), fontsize=30, fontweight='bold')
     ax3.set_title('Median pledged \nper project ($)', fontsize=32)
     ax3.set_ylabel('')
     
     stateDistCat.div(stateDistCat.sum(axis=1), axis=0).successful.sort_values(ascending=False).plot(kind='barh', ax=ax4, color=color2)
     plt.setp(ax4.get_xticklabels(), rotation=0, fontsize=28)
-    plt.setp(ax4.get_yticklabels(), fontsize=30)
+    plt.setp(ax4.get_yticklabels(), fontsize=30, fontweight='bold')
     ax4.set_title('Proportion of \nsuccessful projects', fontsize=32)
     vals = ax4.get_xticks()
     ax4.set_xticklabels(['{:,.0%}'.format(x) for x in vals])
@@ -543,19 +543,19 @@ def plot_figures_about_main_category(data2, stateDistCat, filename):
     
     data2.groupby('main_category').backers_count.median().sort_values(ascending=False).plot(kind='barh', ax=ax5, color=color2)
     plt.setp(ax5.get_xticklabels(), rotation=0, fontsize=28)
-    plt.setp(ax5.get_yticklabels(), fontsize=30)
+    plt.setp(ax5.get_yticklabels(), fontsize=30, fontweight='bold')
     ax5.set_title('Median backers \nper project', fontsize=32)
     ax5.set_ylabel('')
     
     data2.groupby('main_category').pledge_per_backer.median().sort_values(ascending=False).plot(kind='barh', ax=ax6, color=color2)
     plt.setp(ax6.get_xticklabels(), rotation=0, fontsize=28)
-    plt.setp(ax6.get_yticklabels(), fontsize=30)
+    plt.setp(ax6.get_yticklabels(), fontsize=30, fontweight='bold')
     ax6.set_title('Median pledged \nper backer ($)', fontsize=32)
     ax6.set_ylabel('')
     
     data2.groupby('main_category').competitors.median().sort_values(ascending=False).plot(kind='barh', ax=ax7, color=color2)
     plt.setp(ax7.get_xticklabels(), rotation=0, fontsize=28)
-    plt.setp(ax7.get_yticklabels(), fontsize=30)
+    plt.setp(ax7.get_yticklabels(), fontsize=30, fontweight='bold')
     ax7.set_title('Median number \nof competitors', fontsize=32)
     ax7.set_ylabel('')
     
@@ -564,7 +564,9 @@ def plot_figures_about_main_category(data2, stateDistCat, filename):
     
     stateDistComp.div(stateDistComp.sum(axis=1), axis=0).successful.sort_values(ascending=False).plot(kind='barh', ax=ax8, color=color2)
     plt.setp(ax8.get_xticklabels(), rotation=0, fontsize=28)
-    plt.setp(ax8.get_yticklabels(), fontsize=30)
+    plt.setp(ax8.get_yticklabels(), fontsize=30, fontweight='bold')
+    vals = ax8.get_xticks()
+    ax8.set_xticklabels(['{:,.0%}'.format(x) for x in vals])
     ax8.set_title('Proportion of \nsuccessful projects', fontsize=32)
     ax8.set_ylabel('Competitors Range', fontsize=28)
     
@@ -692,15 +694,15 @@ def plot_other_figures(data2, dataUS, filename, filename1,filename2, filename3, 
     
     stateDistCountry2 = pd.get_dummies(data2.set_index('country2').state).groupby('country2').sum()
     stateDistCountry2.columns = ['failed', 'successful']
-    fig8, (ax8) = plt.subplots(1,1, figsize=(30,8))
-    stateDistCountry2.div(stateDistCountry2.sum(axis=1), axis=0).successful.sort_values(ascending=False).plot(kind='bar', ax=ax8, color=color2)
-    vals = ax8.get_yticks()
-    ax8.set_yticklabels(['{:,.0%}'.format(x) for x in vals])
-    plt.setp(ax8.get_xticklabels(), rotation=70, fontsize=20, fontweight='bold')
-    ax8.tick_params(labelbottom=True, labeltop=False, labelleft=True, labelright=True,
-                     bottom=True, top=False, left=True, right=True)
-    ax8.set_title('Proportion of successful projects')
-    ax8.set_xlabel('Country')
+    fig8, (ax8) = plt.subplots(1,1, figsize=(12,20))
+    stateDistCountry2.div(stateDistCountry2.sum(axis=1), axis=0).successful.sort_values(ascending=False).plot(kind='barh', ax=ax8, color=color2)
+    vals = ax8.get_xticks()
+    ax8.set_xticklabels(['{:,.0%}'.format(x) for x in vals])
+    plt.setp(ax8.get_yticklabels(), rotation=0, fontsize=15)
+    ax8.tick_params(labelbottom=True, labeltop=True, labelleft=True, labelright=False,
+                     bottom=True, top=True, left=True, right=False)
+    ax8.set_title('Proportion of successful projects', y=1.02)
+    ax8.set_ylabel('Country True')
     fig8.tight_layout()
     #plt.show()
     # TODO: Comment if running from console.
