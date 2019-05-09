@@ -76,7 +76,7 @@ def read_dataframe(path):
         A pandas dataframe.
     """
     #pd.read_csv(os.path.join(datadir, "2016-05-15T020446/Kickstarter001.csv"))
-    return pd.read_csv(path)
+    return pd.read_csv(path, enconding='ISO-8859-1')
 
 
 def sort_dataframe_by_columns(dataframe):
