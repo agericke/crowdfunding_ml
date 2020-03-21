@@ -44,18 +44,9 @@ Useful links related to the project:
 
 The team is formed by the following members:
 
-* Cristina Blanco Garrido - A20431766
-    - <cblanco1@hawk.iit.edu>
-    - [Github](https://github.com/crisblancog)
-* Marta de Larrea Pombo - A20432672
-    - <mdelarreapombo@hawk.iit.edu>
-    - [Github](https://github.com/mlpombo)
 * Álvaro Gericke Parga - A20434027
     - <alvgericke@gmail.com>
     - [Github](https://github.com/agericke)
-* Tien Tran - A20414075
-    - <ttran27@hawk.iit.edu>
-    - [Github](https://github.com/crtien)
 
 ## 4. DELIVERABLES<a id="id3"></a>)
 

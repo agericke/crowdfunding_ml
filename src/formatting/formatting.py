@@ -279,7 +279,7 @@ def create_cat_and_subcat(data):
 
 def create_category_2(data):
     """
-    Create category column with data form the dataframe.
+    Create category column with data from the dataframe.
     Params:
         data....The dataframe.
     Returns:
@@ -777,7 +777,7 @@ def main():
     # 1 - Load from disk the complete Merged Dataframe.
     print("\n\n\nStep 1: Load from disk the complete Merged Dataframe.")
     filename = os.path.join(datadir, 'dataframe_total.pkl')
-    print("Complete Dataframe is read from file %s" % filename)
+    print("Completed Dataframe read from file %s" % filename)
     data = read_from_disk(filename)
     # Print summary of dataframe
     print("Dataframe contains %d projects and %d columns for each project\n" % (data.shape[0], data.shape[1]))
@@ -1015,7 +1015,4 @@ def main():
     
     
 if __name__ == "__main__":
-    main()    
-
-
-
+    main()
