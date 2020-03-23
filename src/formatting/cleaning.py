@@ -28,6 +28,7 @@ plt.rcParams.update({'font.size': 22})
 def initial_setup():
     """
     Create Initial setup of directories variables, and dataframe vars to use.
+    
     Returns:
       A tuple containing:
           - datadir:   Absolute Path to the data directory of the project.
@@ -39,15 +40,17 @@ def initial_setup():
     dirname = os.path.dirname(os.path.abspath('__file__'))
     datadir =  os.path.join(os.path.abspath(os.path.join(os.path.join(dirname, os.pardir), os.pardir)), 'data')
     imagesdir =  os.path.join(os.path.abspath(os.path.join(dirname, os.pardir)), 'images')
-    initial_colnames = sorted(['backers_count', 'blurb', 'category', 'country', 'created_at', 'state_changed_at', 'currency', 'deadline', 'goal', 'id', 'launched_at', 'location', 'name', 'pledged', 'state', 'static_usd_rate', 'usd_pledged'])
+    initial_colnames = sorted(['backers_count', 'blurb', 'category', 'country', 'created_at', 'currency', 'deadline', 'goal', 'id', 'launched_at', 'location', 'pledged', 'slug', 'spotlight', 'staff_pick', 'state', 'static_usd_rate', 'usd_pledged'])
     return dirname, datadir, imagesdir, initial_colnames
 
 
 def read_from_disk(filename):
     """
     Read a dataframe from a filename in disk.
+    
     Params:
         filename....Path to the file.
+    
     Returns:
         A pandas dataframe.
     """
@@ -57,41 +60,195 @@ def read_from_disk(filename):
 def store_dataframe(dataframe, filename):
     """
     Store the dataframe using pickle.
+    
     Params:
         dataframe...pandas dataframe to store.
         filename....Path to the file to store the datafram in.
+    
     Returns:
         Nothing.
     """
     pickle.dump(dataframe, open(filename, 'wb'))
-    
 
-def check_missing_values_and_drop(data, drop=False):
+
+def remove_cols(dataframe, cols_to_remove):
+    """
+    Remove all the columns specified by the list from dataframe
+    
+    Params:
+        cols_to_remove....List of columns we want to remove
+        dataframe.........The dataframe to remove the columns from.
+    
+    Returns:
+        A dataframe with only the columns we want.
+    """
+    dataframe.drop(cols_to_remove, inplace=True, axis=1)
+    print("Succesfully removed columns {}".format(cols_to_remove))
+    return dataframe
+
+
+def categorical_with_per_count(dataframe, feature):
+    """
+    Calculate frequency of the categorical feature with % and count base.
+    Sorted on the descending order.
+
+    Params:
+        dataframe.....Pandas dataframe from where to pick the data.
+        feature.......Column for which we want to calculate the data for.
+    """
+    
+    # calculate frequency on % and value
+    freq_merged = pd.concat([dataframe[feature].value_counts(normalize=True) * 100,
+                             dataframe[feature].value_counts(normalize=False)], axis=1)
+    # rename columns
+    freq_merged.columns = [feature + '_%', feature + '_count']
+    return freq_merged
+
+
+def check_missing_values_and_drop(dataframe, drop=False):
     """
     Check the number of missing values that we have. Notice that this function
-    will count 
+    will count.
+    
     Params:
-        data....Dataframe to check the missing values.
+        dataframe....Dataframe to check the missing values.
         drop....Boolean to indicate if we want to drop missing values or not.
+    
     Returns:
         Prints a summary of the number and % of missing values.
         The dataframe with no missing values
     """
-    #dataMis=data[data.isnull().any(axis=1)]
-    #print(dataMis.groupby('country').country.count())
-    total_rows = data.shape[0]
-    na_col_counts = data.isna().sum()
-    for idx in na_col_counts.index:
-        na_number = na_col_counts[idx]
-        print("Total number of NA values in column %s is %d" % (str(idx), na_number))
-        pct_number = (na_number/total_rows) * 100
-        print("Percentage of Na in column %s is %.4f %%\n" % (str(idx), pct_number))
-    if drop:
-        data = data.dropna()
-    return data
-    # TODO: See if we can check the missing indexes for each column and run a study on them.
-    # TODO: Run experiments to try to identify is the missing values are mainly because of a reason or one type of project, or specific to one period of time (see if they are missing at random, missing not at random...)
+    total_rows = dataframe.shape[0]
     
+    na_col_counts = data.isna().sum().sort_values(ascending = False)
+    freq_merged = pd.concat([na_col_counts, (na_col_counts/total_rows)*100], axis=1)
+    freq_merged.columns = ['Total_count', '%_count']
+    print(freq_merged)
+
+    if drop:
+        dataframe = dataframe.dropna()
+    
+    return dataframe
+    # TODO: See if we can check the missing indexes for each column and run a study on them.
+    # TODO: Run experiments to try to identify is the missing values are mainly because of a reason 
+    #   or one type of project, or specific to one period of time (see if they are missing at 
+    #   random, missing not at random...)
+    
+
+def create_currency_cols(dataframe):
+    """
+    Create new cols related to currency cols and study results.
+    
+    Params:
+        dataframe.....Dataframe to create the usd_goal column from.
+    
+    Returns:
+        A new dataframe with the usd_goal columns and the goal column erased.
+    """
+    # Create Goal in USD value.
+    dataframe['goal_usd'] = dataframe['goal']*dataframe['static_usd_rate']
+    
+    # Create pledged_usd
+    dataframe['pledged_usd'] = dataframe['pledged']*dataframe['static_usd_rate']
+
+    # Study differences from calculated to the value we had.
+    print(abs(dataframe['usd_pledged'] - dataframe['pledged_usd']).describe())
+
+    # Remove not any more useful cols.
+    dataframe = remove_cols(dataframe, ['goal', 'static_usd_rate', 'usd_pledged'])
+
+    return dataframe
+
+
+def convert_datetype_cols(dataframe):
+    """
+    Convert date ralted cols to datetype from timestamp values in seconds.
+
+    Params:
+        dataframe.....Dataframe to convert the date ralted columns to datetype.
+    
+    Returns:
+        A new dataframe with the datetype columns in correct type.
+    """
+    dataframe['launched_at'] = pd.to_datetime(dataframe['launched_at'], unit='s')
+    dataframe['deadline'] = pd.to_datetime(dataframe['deadline'], unit='s')
+    dataframe['created_at'] = pd.to_datetime(dataframe['created_at'], unit='s')
+
+    return dataframe
+
+
+def to_tde(dataframe, filename, tb_name='Kickstarter'):
+    """
+    Function for creating an hyper dataset for Tableua from the pandas dataframe.
+    
+    Params:
+        - dataframe.....Pandas dataframe to create the extract from.
+        - filename......Path to the file where we will store the .hyper extract.
+        - tb_name.......Name of the table to be created. (Deafault: Kickstarter)
+        
+    Returns:
+        Nothing
+    """    
+    # 0 - Initialize extract API
+    ExtractAPI.initialize()
+
+    # Step 1: Create the Extract File
+    dataExtract = Extract(filename)
+
+    if dataExtract.hasTable(tb_name):
+        return print("tde already exist use another name")
+
+    # Step 2: Create the table definition
+    if (not dataExtract.hasTable(tb_name)):
+        dataSchema = TableDefinition()
+        dataSchema.addColumn('backers_count', Type.INTEGER)
+        dataSchema.addColumn('blurb', Type.UNICODE_STRING)
+        dataSchema.addColumn('category', Type.CHAR_STRING)
+        dataSchema.addColumn('country', Type.CHAR_STRING)
+        dataSchema.addColumn('created_at', Type.DATETIME)
+        dataSchema.addColumn('currency', Type.CHAR_STRING)
+        dataSchema.addColumn('deadline', Type.DATETIME)
+        dataSchema.addColumn('id', Type.INTEGER)
+        dataSchema.addColumn('launched_at', Type.DATETIME)
+        dataSchema.addColumn('location', Type.UNICODE_STRING)
+        dataSchema.addColumn('slug', Type.UNICODE_STRING)
+        dataSchema.addColumn('spotlight', Type.BOOLEAN)
+        dataSchema.addColumn('staff_pick', Type.BOOLEAN)
+        dataSchema.addColumn('state', Type.CHAR_STRING)
+        dataSchema.addColumn('goal_usd', Type.DOUBLE)
+        dataSchema.addColumn('pledged_usd', Type.DOUBLE)
+
+        # Step 3: Create a table in the image of the table definition
+        table = dataExtract.addTable(tb_name, dataSchema)
+
+    # Step 4: Create rows and insert them one by one
+    newRow = Row(dataSchema)
+    for i in range(0, len(dataframe)):
+        newRow.setInteger(0, dataframe['backers_count'].iloc[i])
+        newRow.setString(1, dataframe['blurb'].iloc[i])
+        newRow.setCharString(2, dataframe['category'].iloc[i])
+        newRow.setCharString(3, dataframe['country'].iloc[i])
+        newRow.setDateTime(4, dataframe['created_at'].iloc[i].year, dataframe['created_at'].iloc[i].month, dataframe['created_at'].iloc[i].day, dataframe['created_at'].iloc[i].hour, dataframe['created_at'].iloc[i].minute, dataframe['created_at'].iloc[i].second, dataframe['created_at'].iloc[i].microsecond)
+        newRow.setCharString(5, dataframe['currency'].iloc[i])
+        newRow.setDateTime(6, dataframe['deadline'].iloc[i].year, dataframe['deadline'].iloc[i].month, dataframe['deadline'].iloc[i].day, dataframe['deadline'].iloc[i].hour, dataframe['deadline'].iloc[i].minute, dataframe['deadline'].iloc[i].second, dataframe['deadline'].iloc[i].microsecond)
+        newRow.setInteger(7, dataframe['id'].iloc[i])
+        newRow.setDateTime(8, dataframe['launched_at'].iloc[i].year, dataframe['launched_at'].iloc[i].month, dataframe['launched_at'].iloc[i].day, dataframe['launched_at'].iloc[i].hour, dataframe['launched_at'].iloc[i].minute, dataframe['launched_at'].iloc[i].second, dataframe['launched_at'].iloc[i].microsecond)
+        newRow.setString(9, dataframe['location'].iloc[i])
+        newRow.setString(10, dataframe['slug'].iloc[i])
+        newRow.setBoolean(11, dataframe['spotlight'].iloc[i])
+        newRow.setBoolean(12, dataframe['staff_pick'].iloc[i])
+        newRow.setCharString(13, dataframe['state'].iloc[i])
+        newRow.setDouble(14, dataframe['goal_usd'].iloc[i])
+        newRow.setDouble(15, dataframe['pledged_usd'].iloc[i])
+        
+        table.insert(newRow)
+
+    # Step 5: Close the tde
+    dataExtract.close()
+    
+    # Step 6: Close the Tableau Extract API
+    ExtractAPI.cleanup()
+
 
 def create_new_vars(data):
     """
@@ -181,20 +338,6 @@ def plot_proyects_per_year(data, filename1, filename2):
     ax2.set_title('State distribution of projects per year')
     ax2.set_xlabel('Year')
     fig.savefig(filename2, dpi=fig.dpi)
-
-
-def remove_cols(dataframe, cols_to_remove):
-    """
-    Remove all the columns specified by the list form dataframe
-    Params:
-        cols_to_remove....List of columns we want to remove
-        dataframe.........The dataframe to remove the columns from.
-    Returns:
-        A dataframe with only the columns we want.
-    """
-    dataframe.drop(cols_to_remove, inplace=True, axis=1)
-    print("Succesfully removed columns %s" % cols_to_remove)
-    return dataframe
 
 
 def len_str_col(data, col, new_col):
@@ -768,40 +911,60 @@ def main():
     # 0 - Initial directories and colnames set up
     print("Step 0: Initial directories and colnames set up")
     dirname, datadir, imagesdir, initial_colnames = initial_setup()
-    print("Directory of this file is %s" % dirname)
-    print("Data directory is %s" % datadir)
-    print("Images directory is %s" % imagesdir)
-    print("Initial columns for our model are: \n%s" % initial_colnames)
+    print("Directory of this file is {}".format(dirname))
+    print("Data directory is {}".format(datadir))
+    print("Images directory is {}".format(imagesdir))
+    print("Initial columns for our model are: \n{}".format(initial_colnames))
     
     
     # 1 - Load from disk the complete Merged Dataframe.
     print("\n\n\nStep 1: Load from disk the complete Merged Dataframe.")
     filename = os.path.join(datadir, 'dataframe_total.pkl')
-    print("Completed Dataframe read from file %s" % filename)
+    print("Completed Dataframe read from file {}".format(filename))
     data = read_from_disk(filename)
     # Print summary of dataframe
-    print("Dataframe contains %d projects and %d columns for each project\n" % (data.shape[0], data.shape[1]))
+    print("Dataframe contains {} projects and {} columns for each project\n".format(
+        data.shape[0], data.shape[1])
+    )
     
     
     # 2 - Look for missing values for every row and print summary.
     print("\n\n\nStep 2: Look for missing values for every row and print summary.")
     data = check_missing_values_and_drop(data, True)
-    print("As we can see, we have very low percentage of missing values,the highest column with missing values is location column with only a 0.34 %, so we decided to drop the missing values")
-    print("Also, studying the missing data, we discover that out of 1091 rows with missing data: \n")
+    print("As we can see, we have very low percentage of missing values,the highest column with \
+        missing values is location column with only a 0.31 %, so we decided to drop the missing \
+        values")
+    print("Also, studying the missing data, we discover that out of 1091 rows with missing data:\
+     \n")
     print("United States     1087\nGreat Britain     2\nDenmark           1\nAustria           1\n")
     print("The distribution of the missing values across the main_category variable is:\n")
     print("art             118\ncomics           14\ncrafts            9\ndance            18\ndesign           12\nfashion           6\nfilm & video    279\nfood            10\ngames            49\njournalism       55\nmusic           258\nphotography      49\npublishing      141\ntechnology       51\ntheater          22")
     # TODO: NEED TO CHECK OTHER TYPES OF EMPTY VALUES ("empty strings for example") They have already been checked right?
     
-    
+
+    # 3 - Create currency realted vars. We create goal_usd and pledged_usd.
+    print("\n\n\nStep 3: Create currency related cols.")
+    data = create_currency_cols(data)
+
+
+    # 4 - Convert date related columns created_at, launched_at and deadline to datetime.
+    print("\n\n\nStep 4: Covert timestamp cols to datetime type.")
+    data = convert_datetype_cols(data)
+
+
+    # 5 - Create hyper extract file for migrating data to tableau
+    print("\n\n\nStep 5: Create data extract for Tableau.")
+
+
     # 3 - Create new variables from present columns. The new columns to create are:
     #       - usd_goal: Goal of the project in USD.
     #       - duration: Contains the dyas between the launching date and the deadline.
     #       - duration_until_lanched: Tracks the # of days between the created day and the launched date. 
-    print("\n\n\nStep 3: Create new columns usd_goal, duration and duration_until_launched from present columns.")
+    print("\n\n\nStep 3: Create new columns usd_goal, duration and duration_until_launched from\
+     present columns.")
     data = create_new_vars(data)
     
-    
+
     # 4 - Create year, month and week vars from the launched_at var, and convert to 
     #    date type launched_at and deadline vars   
     print("\n\n\nStep 4: Create year, month and week vars from the launched_at var, and convert to date type launched_at and deadline vars.")
@@ -1012,7 +1175,7 @@ def main():
     filename = os.path.join(datadir, 'formatting_ML_y.pkl')
     store_dataframe(y, filename)
     print("Machine Learning 'y' array succesfully saved to %s" % filename)
-    
+
     
 if __name__ == "__main__":
     main()
