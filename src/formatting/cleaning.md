@@ -1,8 +1,19 @@
 # CLEANING PROCESS & RESULTS
 
-First of all we study the missing values for every row in the data.
+We will follow a thorough process during the cleaning. This process will contain the following phases:
 
-We found that we have nearly non NA values along the rows. Only a total of 1090 rows, and most of them (1072) along the location column. Remember that location column contained a JSON string from which we could extract location related values such as country, state or city.
+1 - First of all we study the missing values for every row in the data.
+2 - Then we will create the correct data structure for obtaining all the necessary columns that will be used during the process and removing those that will not be used.
+3 - Afterwards, we will perform per variable analysis. We will study all the different aspects for each variable and try to identify possible knowledge propmpted from analysing independently each variable.
+4 - Then, we will study possible relations within variables and compute useful transformations that we may find during the analysis.
+5 - Finally we will prepare the data for being able to used it in our models.
+
+TODO: As we will need to obtain data from our source that still has not been seen by our models, we will need to compute a python script for reading the raw data, generating the dataframe, clean it and prepare it for our model being able to process it.
+
+
+## 1 - MISSING VALUES
+
+We found that we have nearly non NA values along the rows. Only a total of 1090 rows, and most of them (1072) along the location column. Remember that location column contained a JSON string from which we could extract location related values such as country, state or city. This corresponds to only 0.31% of all of our data with missing values.
 
 After grouping the missing values by country, we obtained 4 different countries (AU, GB, DE, US). Except for US which had a total of 1087 rows from the 1090, the others had only 1 missing value.
 

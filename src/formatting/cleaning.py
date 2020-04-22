@@ -9,14 +9,17 @@ Created on Tue Mar 26 01:54:00 2019
 import json
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib import cm
-import seaborn as sns
 import os, sys
 import datetime
 from datetime import date
 import time
 import pickle
+
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+from matplotlib import cm
+import seaborn as sns
+
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 #from ggplot import *
@@ -24,6 +27,7 @@ from sklearn.model_selection import train_test_split
 
 
 plt.rcParams.update({'font.size': 22})
+
 
 def initial_setup():
     """
@@ -175,6 +179,85 @@ def convert_datetype_cols(dataframe):
     dataframe['created_at'] = pd.to_datetime(dataframe['created_at'], unit='s')
 
     return dataframe
+
+
+def obtain_cat_and_subcat_for_row(row):
+    """
+    Obtain category and subcategory of a row. notice that if subcategory not present,
+    this will set it to none.
+    Params:
+        row....The dataframe row.
+    Returns:
+        A tuple containing:
+            - category: Value for obtained category.
+            - subcategory: Value for obtained subcategory, and None if not present.
+    """
+    # Convert string to dict
+    cat_split = json.loads(row['category'])['slug'].split('/')
+    # Save category and subcategory
+    category = cat_split[0]
+    subcategory = ""
+    
+    if len(cat_split)>1:
+        # There is a sucategory
+        subcategory = cat_split[1]
+    
+    return (category, subcategory)
+    
+
+def create_cat_and_subcat(data):
+    """
+    Save in a new column the category and subcategory extracted from the category column.
+    Params:
+        data.....Dataframe.
+    Returns:
+        A dataframe with category and subcategory vars created.¡ for each row.
+    """
+    cat_subcat = data.apply(obtain_cat_and_subcat_for_row, axis=1)
+    data['main_category'] = [c[0].lower().strip().replace(' ','-') for c in cat_subcat]
+    data['sub_category'] = [c[1].lower().strip().replace(' ','-') for c in cat_subcat]
+    data.drop('category', inplace=True, axis=1)
+    print('Succesfully created columns category and subcategory')
+    
+    return data
+
+
+def obtain_location_vars_for_row(row):
+    """
+    Obtain country, state and type of location.
+    Params:
+        row....The dataframe row.
+    Returns:
+        A tuple containing:
+            - country: Country oobtained.
+            - state: State obtained.
+            - loc_type: Type of location obtained.
+    """
+    # Convert string to dict
+    loc_dict = json.loads(row['location'])
+    country = loc_dict['country']
+    state = loc_dict['state']
+    loc_type =  loc_dict['type']
+    
+    return (country, state, loc_type)
+    
+
+def create_location_vars(data):
+    """
+    Save in a new column the country, state and location type extracted from the location column.
+    Params:
+        data.....Dataframe.
+    Returns:
+        A dataframe with country, state and location vars created for each row.
+    """
+    location_vars = data.apply(obtain_location_vars_for_row, axis=1)
+    data["country2"] = [c[0] for c in location_vars]
+    data["region_state"] = [c[1] for c in location_vars]
+    data["type"] = [c[2] for c in location_vars]
+    data.drop("location", inplace=True, axis=1)
+    print("Succesfully created columns country, region_state and type")
+    
+    return data
 
 
 def to_tde(dataframe, filename, tb_name='Kickstarter'):
@@ -379,95 +462,6 @@ def print_data_summary(data):
     summary=data.describe()
     print(summary)
     return unique, summary
-
-
-def obtain_cat_and_subcat_for_row(row):
-    """
-    Obtain category and subcategory of a row. notice that if subcategory not present,
-    this will set it to none.
-    Params:
-        row....The dataframe row.
-    Returns:
-        A tuple containing:
-            - category: Value for obtained category.
-            - subcategory: Value for obtained subcategory, and None if not present.
-    """
-    # Convert string to dict
-    cat_dict = json.loads(row['category'])
-    cat_split = cat_dict['slug'].split("/")
-    # Save category and subcategory
-    category = cat_split[0]
-    subcategory = ""
-    if len(cat_split)>1:
-        # There is a sucategory
-        subcategory = cat_split[1]
-    return (category, subcategory)
-    
-
-def create_cat_and_subcat(data):
-    """
-    Save in a new column the category and subcategory extracted from the category column.
-    Params:
-        data.....Dataframe.
-    Returns:
-        A dataframe with category and subcategory vars created.¡ for each row.
-    """
-    cat_subcat = data.apply(obtain_cat_and_subcat_for_row, axis=1)
-    data["main_category"] = [c[0].lower().replace(" ","") for c in cat_subcat]
-    data["sub_category"] = [c[1].lower().replace(" ","") for c in cat_subcat]
-    data.drop("category", inplace=True, axis=1)
-    print("Succesfully created columns category and subcategory")
-    return data
-    
-
-def create_category_2(data):
-    """
-    Create category column with data from the dataframe.
-    Params:
-        data....The dataframe.
-    Returns:
-        A dataframe containing the main_category column and with category column removed.
-    """
-    data['main_category'] = data['category'].apply(lambda x: x.split("slug",1)[-1].split("\"")[2].split("/")[0])
-    #data['sub_category'] = data['category'].apply(lambda x: x.split("slug",1)[-1].split("\"")[2].split("/")[-1])
-    # We drop the category variable since we don't need it anymore.
-    data.drop("category", inplace=True, axis=1)
-
-
-def obtain_location_vars_for_row(row):
-    """
-    Obtain country, state and type of location.
-    Params:
-        row....The dataframe row.
-    Returns:
-        A tuple containing:
-            - country: Country oobtained.
-            - state: State obtained.
-            - loc_type: Type of location obtained.
-    """
-    # Convert string to dict
-    loc_dict = json.loads(row['location'])
-    country = loc_dict['country']
-    state = loc_dict['state']
-    loc_type =  loc_dict['type']
-    return (country, state, loc_type)
-    
-
-def create_location_vars(data):
-    """
-    Save in a new column the country, state and location type extracted from the location column.
-    Params:
-        data.....Dataframe.
-    Returns:
-        A dataframe with country, state and location vars created for each row.
-    """
-    location_vars = data.apply(obtain_location_vars_for_row, axis=1)
-    data["country2"] = [c[0] for c in location_vars]
-    data["region_state"] = [c[1] for c in location_vars]
-    data["type"] = [c[2] for c in location_vars]
-    data.drop("location", inplace=True, axis=1)
-    print("Succesfully created columns country, region_state and type")
-    return data
 
 
 def obtain_success_by_goal_range(data, ranges, range_values):
@@ -936,11 +930,14 @@ def main():
         values")
     print("Also, studying the missing data, we discover that out of 1091 rows with missing data:\
      \n")
-    print("United States     1087\nGreat Britain     2\nDenmark           1\nAustria           1\n")
-    print("The distribution of the missing values across the main_category variable is:\n")
-    print("art             118\ncomics           14\ncrafts            9\ndance            18\ndesign           12\nfashion           6\nfilm & video    279\nfood            10\ngames            49\njournalism       55\nmusic           258\nphotography      49\npublishing      141\ntechnology       51\ntheater          22")
+    # print("United States     1087\nGreat Britain     2\nDenmark           1\nAustria           1\n")
+    # print("The distribution of the missing values across the main_category variable is:\n")
+    # print("art             118\ncomics           14\ncrafts            9\ndance            18\ndesign           12\nfashion           6\nfilm & video    279\nfood            10\ngames            49\njournalism       55\nmusic           258\nphotography      49\npublishing      141\ntechnology       51\ntheater          22")
     # TODO: NEED TO CHECK OTHER TYPES OF EMPTY VALUES ("empty strings for example") They have already been checked right?
     
+    # Change state column to result
+    data['result'] = data['state']
+    data.drop('state', inplace=True, axis=1)
 
     # 3 - Create currency realted vars. We create goal_usd and pledged_usd.
     print("\n\n\nStep 3: Create currency related cols.")
