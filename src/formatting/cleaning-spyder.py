@@ -1,4 +1,5 @@
 import json
+import re, string
 import math
 import pandas as pd
 import numpy as np
@@ -7,6 +8,7 @@ import datetime
 from datetime import date
 import time
 import pickle
+from pandas.api.types import CategoricalDtype
 
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
@@ -21,6 +23,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 #%matplotlib inline
 sns.set()
+
 
 def initial_setup():
     """
@@ -512,7 +515,7 @@ fig.savefig(filename, dpi=fig.dpi)
 plt.show()
 print('We see that Spotlight is directly related to the result of the project and ith as value True\
 only if the project was successful and False otherwise. This way we ca nget rid of the column as\
-it does ont add valuable information')
+it does not add valuable information')
 # Drop spotlight column.
 data.drop('spotlight', inplace=True, axis=1)
 # Pick only [successful or failed] projects.
@@ -572,15 +575,21 @@ fig.tight_layout(rect=[0, 0.03, 1, 0.95])
 plt.show()
 
 # Lets change column result to bool type with True if succesful.
-data['result'] = data['result'].map({'successful': True, 'failed': False})
+# Lets change tcolumn to Categorical type
+data['result'] = data.result.astype(CategoricalDtype(categories=['failed', 'successful'], ordered=False))
+data.result.describe()
+#data['result'] = data['result'].map({True: 'successful', False: 'failed'})
 
 #5-4.1 backers_count.
 # First of all lets plot a histogram of the backers count variable.
-print('Although we study the backers_count variable, this is not available prior to\
+print('Although we study the backers_count variable, this is not available prior to \
 a project launch. So we may eliminate this variable before modeling.')
+fig = plt.figure()
+ax = fig.add_subplot(111)
 sns.distplot(data.backers_count, kde=True)
 print('We see that it is highly positive skewed. Lets plot per category.')
-ax = plt.gca()
+fig = plt.figure()
+ax = fig.add_subplot(111)
 sns.boxplot(data=data, x='result', y='backers_count', ax=ax)
 print('We observe the wider and outliers for successful projects')
 
@@ -588,12 +597,92 @@ print('Lets try to apply a log transformation to the variable. We need to add 1 
 avoiding mistakes from 0 values')
 data['ln(backers_count+1)'] = np.log(data.backers_count +1)
 fig = plt.figure()
-ax = sns.distplot(data[data.result]['ln(backers_count+1)'], kde=True, label='successful')
-sns.distplot(data[~data.result]['ln(backers_count+1)'], ax=ax, label='failed')
+ax = fig.add_subplot(111)
+sns.distplot(data[data.result == 'successful']['ln(backers_count+1)'], kde=True, ax=ax, label='successful')
+sns.distplot(data[data.result == 'failed']['ln(backers_count+1)'], ax=ax, label='failed')
 ax.legend()
-print('We can see that succesful projects follow an appproximate normal distribution while\
-the failed ones are decreasing from 0. The shape for the failed ones is expected as\
+print('We can see that succesful projects follow an appproximate normal distribution while \
+the failed ones are decreasing from 0. The shape for the failed ones is expected as \
 failed projects will have few backers_count.')
 fig = plt.figure()
-#sns.stripplot(x="result", y="backers_count", data=data, jitter=0.1, orient="v")
-# TODO: Before plotting we need to establich the variable as categorical.
+sns.stripplot(x="backers_count", y="result", data=data, jitter=0.1)
+sns.regplot(x="backers_count", y= data.result == 'successful', data=data, ci= None, logistic=True, scatter_kws={"color": "blue"}, line_kws={"color": "red"});
+# TODO: Study mean contribution.
+
+#5-4.2 blurb.
+data['blurb_len'] = data.blurb.apply(lambda x: len(x.strip().split()))
+fig = plt.figure()
+ax = fig.add_subplot(111)
+sns.stripplot(
+        data = data.query('blurb_len < 50'), 
+        x = "blurb_len", 
+        y = "result",
+        jitter = 0.1, 
+        ax = ax
+)
+# We put a condition of less than 50 as there is a unique outlier.
+sns.regplot(
+        x = "blurb_len",
+        y = data.query("blurb_len <  50").result == 'successful',
+        data = data.query("blurb_len < 50"),
+        ci = None,
+        logistic = True,
+        scatter = False,
+        line_kws = {"color": "red"},
+        ax = ax
+);
+plt.show()
+
+# Check if there is a relation with number of unique words
+regex = re.compile("[" + re.escape(string.punctuation) + "]")
+blurb_unique_len = data.blurb.apply(lambda x: np.unique(regex.sub("", x).lower().strip().split()).size)
+
+fig = plt.figure()
+ax = fig.add_subplot(111)
+sns.stripplot(x = blurb_unique_len, y = "result", data = data, jitter = 0.1, ax = ax)
+sns.regplot(
+        x = blurb_unique_len,
+        y = data.result.cat.codes,
+        data = data,
+        ci = None,
+        scatter=False,
+        ax = ax
+);
+ax.xaxis.set_label_text('Unique Blurb Words Length')
+
+print("We see that there is no relatoinship in th blur bcolunm so we can drop \
+the related columns")
+
+data = remove_cols(data, ['blurb', 'blurb_len'])
+
+#5-4.3 slug.
+data['slug_len'] = data.slug.apply(lambda x: len(x.strip().split('-')))
+fig = plt.figure()
+ax = fig.add_subplot(111)
+sns.stripplot(data = data, x = "slug_len", y = "result", jitter = 0.1, ax = ax)
+sns.regplot(
+        x = "slug_len",
+        y = data.result == 'successful',
+        data = data,
+        ci = None,
+        logistic = True,
+        scatter = False,
+        line_kws = {"color": "red"},
+        ax = ax
+);
+
+slug_unique_len = data.slug.apply(lambda x: np.unique(x.strip().split('-')).size)        
+fig = plt.figure()
+ax = fig.add_subplot(111)
+sns.stripplot(x = slug_unique_len, y = "result", data = data, jitter = 0.1, ax = ax)
+sns.regplot(
+        x = slug_unique_len,
+        y = data.result.cat.codes,
+        data = data,
+        ci = None,
+        scatter=False,
+        ax = ax
+);
+ax.xaxis.set_label_text('Unique Slug Words Length')
+
+data = remove_cols(data, ['slug', 'slug_len'])
