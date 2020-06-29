@@ -37,9 +37,16 @@ def initial_setup():
     """
     # Initial directories set up
     dirname = os.path.dirname(os.path.abspath('__file__'))
-    datadir =  os.path.join(os.path.abspath(os.path.join(os.path.join(dirname, os.pardir), os.pardir)), 'data')
+    datadir =  os.path.join(
+                os.path.abspath(os.path.join(os.path.join(dirname, os.pardir), os.pardir)), 
+                'data'
+            )
     imagesdir =  os.path.join(os.path.abspath(os.path.join(dirname, os.pardir)), 'images')
-    initial_colnames = sorted(['backers_count', 'blurb', 'category', 'country', 'created_at', 'currency', 'deadline', 'goal', 'id', 'launched_at', 'location', 'pledged', 'slug', 'spotlight', 'staff_pick', 'state', 'static_usd_rate', 'usd_pledged'])
+    initial_colnames = sorted(
+                ['backers_count', 'blurb', 'category', 'country', 'created_at', 'currency',
+                 'deadline', 'goal', 'id', 'launched_at', 'location', 'pledged', 'slug',
+                 'spotlight', 'staff_pick', 'state', 'static_usd_rate', 'usd_pledged']
+            )
     return dirname, datadir, imagesdir, initial_colnames
 
 
@@ -122,23 +129,9 @@ def check_missing_values_and_drop(data, drop=False):
     
     return data, freq_merged
     # TODO: See if we can check the missing indexes for each column and run a study on them.
-    # TODO: Run experiments to try to identify is the missing values are mainly because of a reason or one type of project, or specific to one period of time (see if they are missing at random, missing not at random...)
-    
-    
-def check_na_column(data, column, value, print_cols):
-    """
-    Function to print info regarding specific coolumn missing values.
-    
-    Params:
-        data.........Pandas dataframe
-        column.......Column code to check
-        value........Column value to fiter data
-        print_cols...Array of columns to print
-    Returns:
-        Nothing.
-    """
-    print(data[data[column] == value][print_cols])
-    print('\n')
+    # TODO: Run experiments to try to identify is the missing values are mainly because of a reason 
+    #    or one type of project, or specific to one period of time (see if they are missing at 
+    #    random, missing not at random...)
 
     
 def obtain_cat_and_subcat_for_row(row):
@@ -304,11 +297,38 @@ def to_tde(dataframe, filename, tb_name='Kickstarter'):
         newRow.setString(1, dataframe['blurb'].iloc[i])
         newRow.setCharString(2, dataframe['category'].iloc[i])
         newRow.setCharString(3, dataframe['country'].iloc[i])
-        newRow.setDateTime(4, dataframe['created_at'].iloc[i].year, dataframe['created_at'].iloc[i].month, dataframe['created_at'].iloc[i].day, dataframe['created_at'].iloc[i].hour, dataframe['created_at'].iloc[i].minute, dataframe['created_at'].iloc[i].second, dataframe['created_at'].iloc[i].microsecond)
+        newRow.setDateTime(
+                4,
+                dataframe['created_at'].iloc[i].year,
+                dataframe['created_at'].iloc[i].month,
+                dataframe['created_at'].iloc[i].day,
+                dataframe['created_at'].iloc[i].hour,
+                dataframe['created_at'].iloc[i].minute,
+                dataframe['created_at'].iloc[i].second,
+                dataframe['created_at'].iloc[i].microsecond
+            )
         newRow.setCharString(5, dataframe['currency'].iloc[i])
-        newRow.setDateTime(6, dataframe['deadline'].iloc[i].year, dataframe['deadline'].iloc[i].month, dataframe['deadline'].iloc[i].day, dataframe['deadline'].iloc[i].hour, dataframe['deadline'].iloc[i].minute, dataframe['deadline'].iloc[i].second, dataframe['deadline'].iloc[i].microsecond)
+        newRow.setDateTime(
+                6,
+                dataframe['deadline'].iloc[i].year,
+                dataframe['deadline'].iloc[i].month,
+                dataframe['deadline'].iloc[i].day,
+                dataframe['deadline'].iloc[i].hour,
+                dataframe['deadline'].iloc[i].minute,
+                dataframe['deadline'].iloc[i].second,
+                dataframe['deadline'].iloc[i].microsecond
+            )
         newRow.setInteger(7, dataframe['id'].iloc[i])
-        newRow.setDateTime(8, dataframe['launched_at'].iloc[i].year, dataframe['launched_at'].iloc[i].month, dataframe['launched_at'].iloc[i].day, dataframe['launched_at'].iloc[i].hour, dataframe['launched_at'].iloc[i].minute, dataframe['launched_at'].iloc[i].second, dataframe['launched_at'].iloc[i].microsecond)
+        newRow.setDateTime(
+                8,
+                dataframe['launched_at'].iloc[i].year,
+                dataframe['launched_at'].iloc[i].month,
+                dataframe['launched_at'].iloc[i].day,
+                dataframe['launched_at'].iloc[i].hour,
+                dataframe['launched_at'].iloc[i].minute,
+                dataframe['launched_at'].iloc[i].second,
+                dataframe['launched_at'].iloc[i].microsecond
+            )
         newRow.setString(9, dataframe['location'].iloc[i])
         newRow.setString(10, dataframe['slug'].iloc[i])
         newRow.setBoolean(11, dataframe['spotlight'].iloc[i])
@@ -341,7 +361,12 @@ filename = os.path.join(datadir, 'dataframe_total.pkl')
 print("Completed Dataframe read from file {}".format(filename))
 data = read_from_disk(filename)
 # Print summary of dataframe
-print("Dataframe contains {} projects and {} columns for each project\n".format(data.shape[0], data.shape[1]))
+print(
+      "Dataframe contains {} projects and {} columns for each project\n".format(
+              data.shape[0], 
+              data.shape[1]
+              )
+      )
 
 
 # 2 - Take a look at the data, data types and data info.
@@ -394,30 +419,13 @@ data['created_at'] = pd.to_datetime(data['created_at'], unit='s')
 data = create_cat_and_subcat(data)
 
 # 4-5 Create location columns.
-df2 = create_location_vars(data)
+data = create_location_vars(data)
 data[data.country != data.country2]
 # After some comparison we determine that country2 is more realiable than country.
 data['country'] = data['country2']
 data.drop('country2', inplace=True, axis=1)
 
-
-# 5 - Exploratory Data Analysis.
-#Things to do:
-#    - Study data.
-#    - Check valid key for data.
-#    - Study of missing values.
-#    - Study per variable.
-#        + Study objective variable.
-# 5-1 Overview of the data
-data.info()
-data.describe()
-data.describe(include='all')
-
-# 5-2 Check valid key
-(data.id.value_counts() > 1).sum()
-data.set_index('id', inplace=True)
-
-# 5-3 Check missing data
+# 46 Check missing data on newly created vars.
 data, na_freq = check_missing_values_and_drop(data, False)
 print("As we can see, we have very low percentage of missing values, with a total of {} rows\
 that correspond to {:.2f}%".format(int(na_freq.sum()[0]), na_freq.sum()[1]))
@@ -430,12 +438,12 @@ unique_na_countries = np.sort(df_null.country.unique())
 print(unique_na_cities)
 print(unique_na_countries)
 # We see that they correspond to very small countries that may not contain states. So we set
-# as the state the country. Fo rdoing so we make a dict from country code to country name.
+# as the state the country. For doing so we make a dict from country code to country name.
 country_to_name = {'AQ': 'Antarctica', 'AW': 'Aruba', 'CC': 'Cocos Islands', 'CW': 'Curacao',
                    'GI': 'Gibraltar', 'KI': 'Kiribati', 'MK': 'Macedonia', 'MO': 'Macau',
                    'NZ': 'New Zealand', 'PN': 'Pitcairn', 'SX': 'Sint Maarten', 'VA': 'Vatican',
                    'XK': 'Kosovo'}    
-[check_na_column(data, 'country', country, ['country', 'state', 'city']) for country in unique_na_countries]
+[print("\n", data[data['country'] == country][['country', 'state', 'city']]) for country in unique_na_countries]
 
 city_to_state = {'MK': {'Skopje': 'Skopje'}, 'NZ': {'Taupo': 'Waikato', 'Rotorua Central': 'Bay of Plenty', 
                  'Dannevirke': 'Manawatu Wanganui', 'Rotorua West': 'Bay of Plenty',
@@ -457,6 +465,22 @@ for country in country_to_name.keys():
 data, na_freq = check_missing_values_and_drop(data, False)
 print('The columns with at least one missing value are:')
 print('{}'.format(na_freq[na_freq.Total_count > 0]))
+
+
+# 5 - Exploratory Data Analysis.
+#Things to do:
+#    - Study data.
+#    - Check valid key for data.
+#    - Study per variable.
+#        + Study objective variable.
+# 5-1 Overview of the data
+data.info()
+data.describe()
+data.describe(include='all')
+
+# 5-2 Check valid key
+(data.id.value_counts() > 1).sum()
+data.set_index('id', inplace=True)
 
 # 5-4 Per variable study.
 # 5-4.1 Objective variable.
@@ -576,11 +600,22 @@ plt.show()
 
 # Lets change column result to bool type with True if succesful.
 # Lets change tcolumn to Categorical type
-data['result'] = data.result.astype(CategoricalDtype(categories=['failed', 'successful'], ordered=False))
+data['result'] = data.result.astype(
+        CategoricalDtype(categories=['failed', 'successful'], ordered=False)
+)
 data.result.describe()
 #data['result'] = data['result'].map({True: 'successful', False: 'failed'})
 
-#5-4.1 backers_count.
+# Lets study the moving average successful results.
+fig = plt.figure()
+ax = fig.add_subplot(111)
+data_date_idx = data.set_index('created_at').sort_index()
+ma_success = data_date_idx.result.apply(lambda x: x == 'successful').rolling('365D').mean()
+ma_success.plot(kind = 'line', ax = ax)
+ax.set_yticklabels(['{:.0%}'.format(x) for x in ax.get_yticks()])
+ax.yaxis.set_label_text('% of Successful projects')
+
+#5-4.2 backers_count.
 # First of all lets plot a histogram of the backers count variable.
 print('Although we study the backers_count variable, this is not available prior to \
 a project launch. So we may eliminate this variable before modeling.')
@@ -686,3 +721,56 @@ sns.regplot(
 ax.xaxis.set_label_text('Unique Slug Words Length')
 
 data = remove_cols(data, ['slug', 'slug_len'])
+
+# 5-4.4 Study currency
+curr_projs = data['currency'].value_counts(normalize=True, sort=True)
+print('{:<15}{:>15}'.format('Currency', '% of Total Projects'))
+[print('{:<15}{:>15.1%}'.format(curr, value)) for curr, value in curr_projs.items()]
+#[print('Currency: {} corresponds to {:.0%} of total projects').format(curr_projs())]
+fig = plt.figure()
+ax = fig.add_subplot(111)
+curr_projs.plot(kind = 'bar', ax = ax)
+ax.set_yticklabels(['{:.0%}'.format(x) for x in ax.get_yticks()])
+
+result_per_curr = data.groupby(['currency', 'result']).size().unstack()
+result_per_curr.sort_values(by = 'successful', ascending = False, inplace = True)
+result_per_curr = result_per_curr.reindex(columns = ['successful', 'failed'])
+result_per_curr = result_per_curr.apply(lambda x: x / sum(x), axis = 1)
+fig = plt.figure()
+ax = fig.add_subplot(111)
+result_per_curr.plot(kind = 'barh', color = ['green', 'red'], ax = ax)
+ax.set_xticklabels(['{:.0%}'.format(x) for x in ax.get_xticks()])
+ax.xaxis.set_tick_params(rotation = 0)
+
+# 5-4.5 Study Country
+data.country.unique().size
+# We have a total of 204 distinct countries.
+country_projs = data['country'].value_counts(normalize = True, sort = True)
+country_projs.plot()
+# We see that we have a high concentration of US projects
+data_us = data[data.country == 'US'].copy()
+data_nonus = data[data.country != 'US'].copy()
+
+# 5-4-5 Study duration.
+data['days_until_launch'] = (data.launched_at - data.created_at).dt.days
+fig = plt.figure()
+ax = fig.add_subplot(111)
+sns.stripplot(
+        data = data, 
+        x = "days_until_launch", 
+        y = "result",
+        jitter = 0.1, 
+        ax = ax
+)
+# We put a condition of less than 50 as there is a unique outlier.
+fig = plt.figure()
+ax = fig.add_subplot(111)
+sns.regplot(
+        x = "days_until_launch",
+        y = data.result == 'successful',
+        data = data,
+        scatter = False,
+        line_kws = {"color": "red"},
+        ax = ax
+);
+plt.show()
